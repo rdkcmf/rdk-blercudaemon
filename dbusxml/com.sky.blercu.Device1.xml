@@ -1,0 +1,134 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<!--
+################################################################################
+# If not stated otherwise in this file or this component's LICENSE file the
+# following copyright and licenses apply:
+#
+# Copyright 2017-2020 Sky UK
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+################################################################################
+-->
+<node>
+
+	<interface name="com.sky.blercu.Device1">
+
+		<method name="FindMe">
+			<arg name="level" type="y" direction="in"/>
+			<arg name="duration" type="i" direction="in"/>
+		</method>
+
+		<method name="SendIrSignal">
+			<arg name="id" type="q" direction="in"/>
+		</method>
+
+		<method name="ProgramIrSignals">
+			<arg name="code" type="i" direction="in"/>
+			<arg name="signals" type="aq" direction="in"/>
+			<annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="KeyCodeList"/>
+		</method>
+
+		<method name="ProgramIrSignalWaveforms">
+			<arg name="waveforms" type="a{qay}" direction="in"/>
+		</method>
+
+		<method name="EraseIrSignals">
+		</method>
+
+		<method name="StartAudioStreaming">
+			<arg name="encoding" type="u" direction="in"/>
+			<arg name="stream" type="h" direction="out"/>
+		</method>
+
+		<method name="StartAudioStreamingTo">
+			<arg name="encoding" type="u" direction="in"/>
+			<arg name="file_path" type="s" direction="in"/>
+		</method>
+
+		<method name="StopAudioStreaming">
+		</method>
+
+		<method name="GetAudioStatus">
+			<arg name="error_status" type="u" direction="out"/>
+			<arg name="packets_received" type="u" direction="out"/>
+			<arg name="packets_expected" type="u" direction="out"/>
+		</method>
+
+		<property name="Address" type="s" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
+		</property>
+
+		<property name="Name" type="s" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="Connected" type="b" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="Manufacturer" type="s" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="Model" type="s" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="SerialNumber" type="s" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="HardwareRevision" type="s" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="FirmwareRevision" type="s" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="SoftwareRevision" type="s" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="IrCode" type="i" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="TouchMode" type="u" access="readwrite">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="TouchModeSettable" type="b" access="readwrite">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="BatteryLevel" type="y" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="AudioStreaming" type="b" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="AudioGainLevel" type="i" access="readwrite">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="true"/>
+		</property>
+
+		<property name="Controller" type="o" access="read">
+			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
+		</property>
+
+	</interface>
+
+</node>

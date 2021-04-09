@@ -1,0 +1,23 @@
+# Ble-RCU Daemon
+This component is designed to provide a interface between bluez and the application for pairing, unpairing and voice commands handling.
+
+# Getting Started
+## Requirements
+* CMake (>3.7)
+* Qt (>5.4)
+* libsystemd
+* libdbus
+* Bluez5
+
+
+## Build
+blercudaemon is a CMake project and can be built with the standard CMake workflow. To build, run the following commands.
+
+cd ~/workspace/of/blercudaemon/repo
+mkdir build && cd build
+
+cmake -DCMAKE_BUILD_TYPE=Debug ../
+
+make -j$(numproc)
+sudo make install
+

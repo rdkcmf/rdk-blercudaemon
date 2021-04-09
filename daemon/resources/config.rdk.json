@@ -1,0 +1,156 @@
+{
+	"timeouts": {
+		"discovery": 15000,
+		"pair": 15000,
+		"setup": 60000,
+		"unpair": 20000
+	},
+
+	"models": [
+		{
+			"name": "EC05x",
+			"disabled": true,
+			"manufacturer": "Ruwido",
+			"oui": "1C:A2:B1",
+			"pairingNameFormat": "U%03hhuruwido Sky Remote",
+			"scanNameFormat": "U[0-9][0-9][0-9]ruwido Sky Remote",
+			"filterBytes": [ 27 ],
+			"connectionParams": {
+				"maxInterval": 15.0,
+				"minInterval": 15.0,
+				"latency": 332,
+				"supervisionTimeout": 15000
+			},
+			"services": {
+				"type": "dbus",
+				"dbusServiceName": "com.ruwido.rcu",
+				"dbusObjectPath": "/com/ruwido/rcu",
+				"supported": [
+					"audio",
+					"battery",
+					"deviceInfo",
+					"findMe",
+					"infrared",
+					"touch"
+				]
+			}
+		},
+		{
+			"name": "ECx01",
+			"manufacturer": "Omni",
+			"oui": "D4:B8:FF",
+			"pairingNameFormat": "U%03hhu SkyQ EC[12]01",
+			"scanNameFormat": "U[0-9][0-9][0-9] SkyQ EC[12]01",
+			"filterBytes": [ 20 ],
+			"services": {
+				"type": "gatt",
+				"supported": [
+					"audio",
+					"battery",
+					"deviceInfo",
+					"findMe",
+					"infrared",
+					"upgrade"
+				]
+			}
+		},
+		{
+			"name": "EC201",
+			"manufacturer": "Omni",
+			"oui": "18:46:44",
+			"pairingNameFormat": "U%03hhu SkyQ EC201",
+			"scanNameFormat": "U[0-9][0-9][0-9] SkyQ EC201",
+			"filterBytes": [ 20 ],
+			"services": {
+				"type": "gatt",
+				"supported": [
+					"audio",
+					"battery",
+					"deviceInfo",
+					"findMe",
+					"infrared",
+					"upgrade"
+				]
+			}
+		},
+		{
+			"name": "EC102",
+			"manufacturer": "UEI",
+			"oui": "70:91:F3",
+			"pairingNameFormat": "U%03hhu SkyQ EC102",
+			"scanNameFormat": "U[0-9][0-9][0-9] SkyQ EC102",
+			"filterBytes": [ 19 ],
+			"services": {
+				"type": "gatt",
+				"supported": [
+					"audio",
+					"battery",
+					"deviceInfo",
+					"findMe",
+					"infrared",
+					"upgrade"
+				]
+			}
+		},
+		{
+			"name": "ECx02",
+			"manufacturer": "UEI",
+			"oui": "E8:0F:C8",
+			"pairingNameFormat": "U%03hhu SkyQ EC[23]02",
+			"scanNameFormat": "U[0-9][0-9][0-9] SkyQ EC[23]02",
+			"filterBytes": [ 19, 21 ],
+			"services": {
+				"type": "gatt",
+				"supported": [
+					"audio",
+					"battery",
+					"deviceInfo",
+					"findMe",
+					"infrared",
+					"upgrade"
+				]
+			}
+		},
+		{
+			"name": "PR1",
+			"manufacturer": "UEI",
+			"oui": "FF:FF:FF",
+			"pairingNameFormat": "Platco PR1",
+			"scanNameFormat": "Platco PR1",
+			"filterBytes": [ 19, 21 ],
+			"services": {
+				"type": "gatt",
+				"supported": [
+					"audio",
+					"battery",
+					"deviceInfo",
+					"findMe",
+					"infrared",
+					"upgrade"
+				]
+			}
+		},
+		{
+			"name": "LC103",
+			"manufacturer": "RemoteSolutions",
+			"oui": "20:44:41",
+			"pairingNameFormat": "U%03hhu SkyQ LC103",
+			"scanNameFormat": "U[0-9][0-9][0-9] SkyQ LC103",
+			"filterBytes": [ 22 ],
+			"services": {
+				"type": "gatt",
+				"supported": [
+					"audio",
+					"battery",
+					"deviceInfo",
+					"findMe",
+					"infrared",
+					"upgrade"
+				]
+			}
+		}
+
+	]
+
+}
+
