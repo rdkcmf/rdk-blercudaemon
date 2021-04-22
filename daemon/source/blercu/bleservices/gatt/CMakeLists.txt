@@ -30,6 +30,7 @@ target_sources( blercu
                    "${CMAKE_CURRENT_LIST_DIR}/gatt_infraredsignal.cpp"
                    "${CMAKE_CURRENT_LIST_DIR}/gatt_touchservice.cpp"
                    "${CMAKE_CURRENT_LIST_DIR}/gatt_upgradeservice.cpp"
+                   "${CMAKE_CURRENT_LIST_DIR}/gatt_remotecontrolservice.cpp"
 
                    "${CMAKE_CURRENT_LIST_DIR}/gatt_services.h"
                    "${CMAKE_CURRENT_LIST_DIR}/gatt_audioservice.h"
@@ -41,6 +42,7 @@ target_sources( blercu
                    "${CMAKE_CURRENT_LIST_DIR}/gatt_infraredsignal.h"
                    "${CMAKE_CURRENT_LIST_DIR}/gatt_touchservice.h"
                    "${CMAKE_CURRENT_LIST_DIR}/gatt_upgradeservice.h"
+                   "${CMAKE_CURRENT_LIST_DIR}/gatt_remotecontrolservice.h"
                 )
 
 # The following define is for the early version of the EC101 RCU that didn't

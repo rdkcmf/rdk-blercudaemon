@@ -84,6 +84,8 @@ bool ConfigModelSettingsData::stringToServiceFlag(const QString &name,
 		*service = ConfigModelSettings::TouchService;
 	else if (name.compare("upgrade", Qt::CaseInsensitive) == 0)
 		*service = ConfigModelSettings::UpgradeService;
+	else if (name.compare("remoteControl", Qt::CaseInsensitive) == 0)
+		*service = ConfigModelSettings::RemoteControlService;
 	else
 		return false;
 

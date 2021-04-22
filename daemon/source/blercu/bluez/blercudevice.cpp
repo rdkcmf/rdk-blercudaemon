@@ -796,6 +796,11 @@ QSharedPointer<BleRcuUpgradeService> BleRcuDeviceBluez::upgradeService() const
 	return m_services->upgradeService();
 }
 
+QSharedPointer<BleRcuRemoteControlService> BleRcuDeviceBluez::remoteControlService() const
+{
+	Q_ASSERT(m_services && m_services->isValid());
+	return m_services->remoteControlService();
+}
 
 // -----------------------------------------------------------------------------
 /*!

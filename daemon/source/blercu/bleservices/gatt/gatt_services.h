@@ -41,6 +41,7 @@ class GattFindMeService;
 class GattInfraredService;
 class GattTouchService;
 class GattUpgradeService;
+class GattRemoteControlService;
 
 
 
@@ -71,6 +72,7 @@ public:
 	QSharedPointer<BleRcuInfraredService> infraredService() const override;
 	QSharedPointer<BleRcuTouchService> touchService() const override;
 	QSharedPointer<BleRcuUpgradeService> upgradeService() const override;
+	QSharedPointer<BleRcuRemoteControlService> remoteControlService() const override;
 
 private:
 	template <typename T>
@@ -94,6 +96,7 @@ private:
 			StartingInfraredServiceState,
 			StartingTouchServiceState,
 			StartingUpgradeServiceState,
+			StartingRemoteControlServiceState,
 			ReadyState,
 		StoppingState
 	};
@@ -118,6 +121,7 @@ private:
 	QSharedPointer<GattInfraredService> m_infraredService;
 	QSharedPointer<GattTouchService> m_touchService;
 	mutable QSharedPointer<GattUpgradeService> m_upgradeService;
+	QSharedPointer<GattRemoteControlService> m_remoteControlService;
 
 private:
 	static const QEvent::Type StartServicesRequestEvent = QEvent::Type(QEvent::User + 1);
@@ -131,7 +135,8 @@ private:
 	static const QEvent::Type InfraredServiceReadyEvent = QEvent::Type(QEvent::User + 8);
 	static const QEvent::Type TouchServiceReadyEvent = QEvent::Type(QEvent::User + 9);
 	static const QEvent::Type UpgradeServiceReadyEvent = QEvent::Type(QEvent::User + 10);
-	static const QEvent::Type ServicesStoppedEvent = QEvent::Type(QEvent::User + 11);
+	static const QEvent::Type RemoteControlServiceReadyEvent = QEvent::Type(QEvent::User + 11);
+	static const QEvent::Type ServicesStoppedEvent = QEvent::Type(QEvent::User + 12);
 
 };
 

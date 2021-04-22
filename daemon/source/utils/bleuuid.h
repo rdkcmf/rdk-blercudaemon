@@ -54,6 +54,7 @@ public:
 		SkyQVoice = 0xf800,
 		SkyQInfrared = 0xf801,
 		SkyQFirmwareUpgrade = 0xf802,
+		ComcastRemoteControl = 0xf803,
 	};
 
 
@@ -95,6 +96,9 @@ public:
 		EmitInfraredSignal = 0xeb06,
 		FirmwareControlPoint = 0xec01,
 		FirmwarePacket = 0xec02,
+		UnpairReason = 0xed01,
+		RebootReason = 0xed02,
+		RcuAction = 0xed03,
 	};
 
 	enum DescriptorType {

@@ -46,11 +46,13 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D __PRETTY_FUNCTION__=__func__" )
 
 
 # Add RDK configuration
-if( RDK )
-    add_definitions( -DENABLE_PAIRING_SERVER=1 )
-    add_definitions( -DENABLE_IRPAIRING=1 )
-else()
+if( NOT RDK )
     add_definitions( -DENABLE_BLERCU_CONN_PARAM_CHANGER=1 )
+endif()
+
+if (ENABLE_BREAKPAD)
+    add_definitions( -DBREAKPAD_SUPPORT )
+    find_library(BREAKPAD_LIB NAMES breakpad_client)
 endif()
 
 # Add the top level source directory to the include paths
@@ -64,7 +66,7 @@ add_subdirectory( source/dbus )
 add_subdirectory( source/blercu )
 add_subdirectory( source/irdb )
 add_subdirectory( source/configsettings )
-if( RDK )
+if( ENABLE_IRPAIRING )
     add_subdirectory( source/irpairing )
 endif()
 if( BUILD_TYPE STREQUAL "DEBUG" )
@@ -90,11 +92,9 @@ add_executable(
         $<TARGET_OBJECTS:utils>
         $<TARGET_OBJECTS:dbus>
         $<TARGET_OBJECTS:blercu>
-        $<TARGET_OBJECTS:irdb>
-        $<TARGET_OBJECTS:sqlite>
         $<TARGET_OBJECTS:services>
         $<TARGET_OBJECTS:configsettings>
-        $<$<BOOL:${RDK}>:$<TARGET_OBJECTS:irpairing>>
+        $<$<BOOL:${ENABLE_IRPAIRING}>:$<TARGET_OBJECTS:irpairing>>
         $<$<CONFIG:Debug>:$<TARGET_OBJECTS:monitors>>
 
         )
@@ -137,6 +137,7 @@ target_link_libraries( # Specifies the target executable
 
         ${BTMGR_LIBRARIES}
 
+        ${BREAKPAD_LIB}
         )
 
 target_compile_definitions(

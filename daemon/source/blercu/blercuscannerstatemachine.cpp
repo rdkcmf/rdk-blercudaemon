@@ -46,9 +46,10 @@ BleRcuScannerStateMachine::BleRcuScannerStateMachine(const QSharedPointer<const 
 	// names that match
 	const QList<ConfigModelSettings> models = config->modelSettings();
 	for (const ConfigModelSettings &model : models) {
-		if (!model.disabled())
+		if (!model.disabled()) {
 			m_deviceNameMatchers.insert(model.oui(), model.scanNameMatcher());
 			m_supportedPairingNames.push_back(model.scanNameMatcher());
+		}
 	}
 
 

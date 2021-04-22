@@ -65,8 +65,8 @@ signals:
 public:
 	bool isStreaming() const override;
 
-	qint32 gainLevel() const override;
-	void setGainLevel(qint32 level) override;
+	quint8 gainLevel() const override;
+	void setGainLevel(quint8 level) override;
 
 	Future<FileDescriptor> startStreaming(Encoding encoding) override;
 	Future<> startStreamingTo(Encoding encoding, int pipeWriteFd) override;
@@ -92,6 +92,8 @@ private:
 	bool getAudioGainCharacteristic(const QSharedPointer<const BleGattService> &gattService);
 	bool getAudioControlCharacteristic(const QSharedPointer<const BleGattService> &gattService);
 	bool getAudioDataCharacteristic(const QSharedPointer<const BleGattService> &gattService);
+
+	void requestGainLevel();
 
 	template<typename T = void>
 	Future<T> createErrorResult(BleRcuError::ErrorType type,
@@ -132,7 +134,7 @@ private:
 	StateMachine m_stateMachine;
 	qint64 m_timeoutEventId;
 
-	qint32 m_gainLevel;
+	quint8 m_gainLevel;
 
 	QSharedPointer<GattAudioPipe> m_audioPipe;
 

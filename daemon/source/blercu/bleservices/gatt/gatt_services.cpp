@@ -31,6 +31,7 @@
 #include "gatt_infraredservice.h"
 #include "gatt_touchservice.h"
 #include "gatt_upgradeservice.h"
+#include "gatt_remotecontrolservice.h"
 
 #include "blercu/blegattprofile.h"
 #include "blercu/blegattservice.h"
@@ -62,6 +63,7 @@ GattServices::GattServices(const BleAddress &address,
 	, m_infraredService(QSharedPointer<GattInfraredService>::create(irDatabase))
 	, m_touchService(QSharedPointer<GattTouchService>::create())
 	, m_upgradeService(QSharedPointer<GattUpgradeService>::create())
+	, m_remoteControlService(QSharedPointer<GattRemoteControlService>::create())
 {
 
 	// connect to the gatt profile update completed event
@@ -111,6 +113,7 @@ void GattServices::init()
 	m_stateMachine.addState(ResolvedServicesSuperState, StartingInfraredServiceState, QStringLiteral("StartingInfraredService"));
 	m_stateMachine.addState(ResolvedServicesSuperState, StartingTouchServiceState, QStringLiteral("StartingTouchService"));
 	m_stateMachine.addState(ResolvedServicesSuperState, StartingUpgradeServiceState, QStringLiteral("StartingUpgradeServiceState"));
+	m_stateMachine.addState(ResolvedServicesSuperState, StartingRemoteControlServiceState, QStringLiteral("StartingRemoteControlServiceState"));
 	m_stateMachine.addState(ResolvedServicesSuperState, ReadyState, QStringLiteral("Ready"));
 
 	m_stateMachine.addState(StoppingState, QStringLiteral("Stopping"));
@@ -133,7 +136,8 @@ void GattServices::init()
 	m_stateMachine.addTransition(StartingInfraredServiceState,      InfraredServiceReadyEvent,      StartingUpgradeServiceState);
 //	m_stateMachine.addTransition(StartingInfraredServiceState,      InfraredServiceReadyEvent,      StartingTouchServiceState);
 //	m_stateMachine.addTransition(StartingTouchServiceState,         TouchServiceReadyEvent,         StartingUpgradeServiceState);
-	m_stateMachine.addTransition(StartingUpgradeServiceState,       UpgradeServiceReadyEvent,       ReadyState);
+	m_stateMachine.addTransition(StartingUpgradeServiceState,       UpgradeServiceReadyEvent,       StartingRemoteControlServiceState);
+	m_stateMachine.addTransition(StartingRemoteControlServiceState, RemoteControlServiceReadyEvent, ReadyState);
 
 	m_stateMachine.addTransition(ResolvedServicesSuperState,        StopServicesRequestEvent,       StoppingState);
 	m_stateMachine.addTransition(StoppingState,                     ServicesStoppedEvent,           IdleState);
@@ -220,6 +224,10 @@ void GattServices::onEnteredState(int state)
 			startService(m_upgradeService, UpgradeServiceReadyEvent);
 			break;
 
+		case StartingRemoteControlServiceState:
+			startService(m_remoteControlService, RemoteControlServiceReadyEvent);
+			break;
+
 		case ReadyState:
 			emit ready();
 			break;
@@ -245,6 +253,8 @@ void GattServices::onStateTransition(int fromState, int toState)
 
 		switch (fromState) {
 			case ReadyState:
+			case StartingRemoteControlServiceState:
+				m_remoteControlService->stop();
 			case StartingUpgradeServiceState:
 				m_upgradeService->stop();
 			case StartingInfraredServiceState:
@@ -319,7 +329,12 @@ void GattServices::startService(const QSharedPointer<T> &service, QEvent::Type r
 
 		QSharedPointer<BleGattService> gattService = m_gattProfile->service(T::uuid());
 		if (!gattService || !gattService->isValid()) {
-			qError() << "failed to find gatt service with uuid" << T::uuid();
+			if (T::uuid() == BleUuid(BleUuid::ComcastRemoteControl)) {
+				qWarning() << "failed to find optional gatt service" << T::uuid() << ", ignoring...";
+				m_stateMachine.postEvent(readyEvent);
+			} else {
+				qError() << "failed to find gatt service with uuid" << T::uuid();
+			}
 #if !defined(EC101_WORKAROUND_MISSING_IR_SERVICE)
 			return;
 #endif
@@ -440,6 +455,18 @@ QSharedPointer<BleRcuTouchService> GattServices::touchService() const
 QSharedPointer<BleRcuUpgradeService> GattServices::upgradeService() const
 {
 	return m_upgradeService;
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	\overload
+
+ 	Returns a shared pointer to the remote control service for this device.
+
+ */
+QSharedPointer<BleRcuRemoteControlService> GattServices::remoteControlService() const
+{
+	return m_remoteControlService;
 }
 
 // -----------------------------------------------------------------------------

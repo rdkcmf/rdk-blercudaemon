@@ -38,6 +38,7 @@ class BleRcuFindMeService;
 class BleRcuInfraredService;
 class BleRcuTouchService;
 class BleRcuUpgradeService;
+class BleRcuRemoteControlService;
 
 
 class BleRcuServices : public QObject
@@ -68,6 +69,7 @@ public:
 	virtual QSharedPointer<BleRcuInfraredService> infraredService() const = 0;
 	virtual QSharedPointer<BleRcuTouchService> touchService() const = 0;
 	virtual QSharedPointer<BleRcuUpgradeService> upgradeService() const = 0;
+	virtual QSharedPointer<BleRcuRemoteControlService> remoteControlService() const = 0;
 
 signals:
 	void ready();

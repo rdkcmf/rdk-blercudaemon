@@ -62,8 +62,8 @@ public:
 public:
 	virtual bool isStreaming() const = 0;
 
-	virtual qint32 gainLevel() const = 0;
-	virtual void setGainLevel(qint32 level) = 0;
+	virtual quint8 gainLevel() const = 0;
+	virtual void setGainLevel(quint8 level) = 0;
 
 	virtual Future<FileDescriptor> startStreaming(Encoding encoding) = 0;
 	virtual Future<> startStreamingTo(Encoding encoding, int pipeWriteFd) = 0;
@@ -86,7 +86,7 @@ public:
 
 signals:
 	void streamingChanged(bool streamming);
-	void gainLevelChanged(qint32 level);
+	void gainLevelChanged(quint8 level);
 };
 
 Q_DECLARE_METATYPE(BleRcuAudioService::StatusInfo)

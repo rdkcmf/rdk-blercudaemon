@@ -9,7 +9,8 @@ HEADERS += \
 	$$PWD/blercufindmeservice.h \
 	$$PWD/blercuinfraredservice.h \
 	$$PWD/blercutouchservice.h \
-	$$PWD/blercuupgradeservice.h
+	$$PWD/blercuupgradeservice.h \
+	$$PWD/blercuremotecontrolservice.h
 
 HEADERS += \
 	$$PWD/blercuservicesfactory.h

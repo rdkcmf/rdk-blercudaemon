@@ -79,7 +79,6 @@ int main(int argc, char *argv[])
     QCommandLineOption vOption(QStringList() << "v" << "verbose", "Enables verbose output <false>.");
     QCommandLineOption aOption(QStringList() << "a" << "address", "The address of the dbus to use.", "address");
     parser.addOption(vOption);
-    parser.addOption(cOption);
     parser.addOption(aOption);
 	QCommandLineOption serOption("service",          "The dbus service name of the RCU daemon <com.sky.blercudaemon>.", "name");
 	QCommandLineOption sysOption("system",           "Use the system dbus <default>.");

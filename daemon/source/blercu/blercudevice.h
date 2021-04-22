@@ -42,6 +42,7 @@ class BleRcuFindMeService;
 class BleRcuInfraredService;
 class BleRcuTouchService;
 class BleRcuUpgradeService;
+class BleRcuRemoteControlService;
 
 
 
@@ -83,6 +84,7 @@ public:
 	virtual QSharedPointer<BleRcuInfraredService> infraredService() const = 0;
 	virtual QSharedPointer<BleRcuTouchService> touchService() const = 0;
 	virtual QSharedPointer<BleRcuUpgradeService> upgradeService() const = 0;
+	virtual QSharedPointer<BleRcuRemoteControlService> remoteControlService() const = 0;
 
 public:
 	template<typename T>
@@ -129,6 +131,10 @@ inline QSharedPointer<BleRcuTouchService> BleRcuDevice::service() const
 template<>
 inline QSharedPointer<BleRcuUpgradeService> BleRcuDevice::service() const
 { return upgradeService(); }
+
+template<>
+inline QSharedPointer<BleRcuRemoteControlService> BleRcuDevice::service() const
+{ return remoteControlService(); }
 
 #endif // !defined(Q_QDOC)
 

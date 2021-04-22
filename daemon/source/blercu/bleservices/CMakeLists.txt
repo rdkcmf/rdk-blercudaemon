@@ -31,11 +31,12 @@ target_sources( blercu
                    "${CMAKE_CURRENT_LIST_DIR}/blercuinfraredservice.h"
                    "${CMAKE_CURRENT_LIST_DIR}/blercutouchservice.h"
                    "${CMAKE_CURRENT_LIST_DIR}/blercuupgradeservice.h"
+                   "${CMAKE_CURRENT_LIST_DIR}/blercuremotecontrolservice.h"
                 )
-                
+
 include( ${CMAKE_CURRENT_LIST_DIR}/gatt/CMakeLists.txt )
 
-if( NOT ANDROID )
+if( NOT ANDROID AND NOT RDK )
     include( ${CMAKE_CURRENT_LIST_DIR}/ipc/CMakeLists.txt )
 endif()
 

@@ -31,6 +31,7 @@
 #include "blercu/bleservices/blercudeviceinfoservice.h"
 #include "blercu/bleservices/blercuinfraredservice.h"
 #include "blercu/bleservices/blercufindmeservice.h"
+#include "blercu/bleservices/blercuremotecontrolservice.h"
 
 #include "blercu/blercuerror.h"
 #include "utils/logging.h"
@@ -145,6 +146,12 @@ BleRcuDevice1Adaptor::BleRcuDevice1Adaptor(const QSharedPointer<BleRcuDevice> &d
 	                 this, &BleRcuDevice1Adaptor::onSoftwareVersionChanged);
 
 
+	// get the remote control service and connect to any / all change signals
+	const QSharedPointer<const BleRcuRemoteControlService> remoteControlService = m_device->remoteControlService();
+	QObject::connect(remoteControlService.data(), &BleRcuRemoteControlService::unpairReasonChanged,
+	                 this, &BleRcuDevice1Adaptor::onUnpairReasonChanged);
+	QObject::connect(remoteControlService.data(), &BleRcuRemoteControlService::rebootReasonChanged,
+	                 this, &BleRcuDevice1Adaptor::onRebootReasonChanged);
 }
 
 BleRcuDevice1Adaptor::~BleRcuDevice1Adaptor()
@@ -274,7 +281,7 @@ void BleRcuDevice1Adaptor::onNameChanged(const QString &name)
 	DBus get property call for com.sky.BleRcuDevice1.AudioGainLevel
 
  */
-qint32 BleRcuDevice1Adaptor::audioGainLevel() const
+quint8 BleRcuDevice1Adaptor::audioGainLevel() const
 {
 	const QSharedPointer<const BleRcuAudioService> service = m_device->audioService();
 	return service->gainLevel();
@@ -289,7 +296,7 @@ qint32 BleRcuDevice1Adaptor::audioGainLevel() const
 	dbus.
 
  */
-void BleRcuDevice1Adaptor::onAudioGainLevelChanged(qint32 gainLevel)
+void BleRcuDevice1Adaptor::onAudioGainLevelChanged(quint8 gainLevel)
 {
 	emitPropertyChanged(QStringLiteral("AudioGainLevel"), gainLevel);
 }
@@ -299,7 +306,7 @@ void BleRcuDevice1Adaptor::onAudioGainLevelChanged(qint32 gainLevel)
 	DBus get property call to set the com.sky.BleRcuDevice1.AudioGainLevel property
 
  */
-void BleRcuDevice1Adaptor::setAudioGainLevel(qint32 value)
+void BleRcuDevice1Adaptor::setAudioGainLevel(quint8 value)
 {
 	const QSharedPointer<BleRcuAudioService> service = m_device->audioService();
 	service->setGainLevel(value);
@@ -954,4 +961,57 @@ void BleRcuDevice1Adaptor::SendIrSignal(quint16 keyCode,
 	// erase the signals and convert the async results to a dbus reply
 	Future<> result = service->emitIrSignal(key);
 	connectFutureToDBusReply(request, result);
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	DBus method call handler for com.sky.BleRcuDevice1.SendRcuAction
+
+ */
+void BleRcuDevice1Adaptor::SendRcuAction(quint8 action, const QDBusMessage &message)
+{
+	const QSharedPointer<BleRcuRemoteControlService> service = m_device->remoteControlService();
+
+	// erase the signals and convert the async results to a dbus reply
+	Future<> result = service->sendRcuAction(action);
+	connectFutureToDBusReply(message, result);
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	DBus get property call for com.sky.BleRcuDevice1.UnpairReason
+
+ */
+quint8 BleRcuDevice1Adaptor::unpairReason() const
+{
+	const QSharedPointer<const BleRcuRemoteControlService> service = m_device->remoteControlService();
+	return service->unpairReason();
+}
+// -----------------------------------------------------------------------------
+/*!
+	DBus get property call for com.sky.BleRcuDevice1.RebootReason
+
+ */
+quint8 BleRcuDevice1Adaptor::rebootReason() const
+{
+	const QSharedPointer<const BleRcuRemoteControlService> service = m_device->remoteControlService();
+	return service->rebootReason();
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	\internal
+
+	Slot called by the \l{BleRcuTouchService} object when when the touch mode
+	changes. We hook this signal to emit a property change signal over dbus.
+
+ */
+void BleRcuDevice1Adaptor::onUnpairReasonChanged(quint8 reason)
+{
+	emitPropertyChanged<quint8>(QStringLiteral("UnpairReason"), reason);
+}
+
+void BleRcuDevice1Adaptor::onRebootReasonChanged(quint8 reason)
+{
+	emitPropertyChanged<quint8>(QStringLiteral("RebootReason"), reason);
 }

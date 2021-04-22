@@ -108,6 +108,15 @@ class BleRcuDevice1Adaptor : public DBusAbstractAdaptor
 	            "    <property access=\"read\" type=\"o\" name=\"Controller\">\n"
 	            "      <annotation value=\"const\" name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\"/>\n"
 	            "    </property>\n"
+	            "    <property access=\"read\" type=\"y\" name=\"UnpairReason\">\n"
+	            "      <annotation value=\"const\" name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\"/>\n"
+	            "    </property>\n"
+	            "    <property access=\"read\" type=\"y\" name=\"RebootReason\">\n"
+	            "      <annotation value=\"const\" name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\"/>\n"
+	            "    </property>\n"
+	            "    <method name=\"SendRcuAction\">\n"
+	            "      <arg direction=\"in\" type=\"y\" name=\"action\"/>\n"
+	            "    </method>\n"
 	            "    <method name=\"FindMe\">\n"
 	            "      <arg direction=\"in\" type=\"y\" name=\"level\"/>\n"
 	            "      <arg direction=\"in\" type=\"i\" name=\"duration\"/>\n"
@@ -162,6 +171,8 @@ public:
 	Q_PROPERTY(QString SoftwareRevision READ softwareRevision)
 	Q_PROPERTY(quint32 TouchMode READ touchMode)
 	Q_PROPERTY(bool TouchModeSettable READ touchModeSettable)
+	Q_PROPERTY(quint8 UnpairReason READ unpairReason)
+	Q_PROPERTY(quint8 RebootReason READ rebootReason)
 
 public:
 	BleRcuDevice1Adaptor(const QSharedPointer<BleRcuDevice> &device,
@@ -177,8 +188,8 @@ public:
 
 	bool connected() const;
 
-	qint32 audioGainLevel() const;
-	void setAudioGainLevel(qint32 value);
+	quint8 audioGainLevel() const;
+	void setAudioGainLevel(quint8 value);
 
 	bool audioStreaming() const;
 
@@ -196,6 +207,9 @@ public:
 
 	quint32 touchMode() const;
 	bool touchModeSettable() const;
+
+	quint8 unpairReason() const;
+	quint8 rebootReason() const;
 
 public slots:
 	void ProgramIrSignals(qint32 codeId, const CdiKeyCodeList &keyCode,
@@ -216,6 +230,8 @@ public slots:
 
 	void SetTouchMode(quint32 flags, const QDBusMessage &message);
 
+	void SendRcuAction(quint8 action, const QDBusMessage &message);
+
 signals:
 
 private:
@@ -225,7 +241,7 @@ private:
 	void onBatteryLevelChanged(int batteryLevel);
 
 	void onAudioStreamingChanged(bool streaming);
-	void onAudioGainLevelChanged(qint32 gainLevel);
+	void onAudioGainLevelChanged(quint8 gainLevel);
 
 	void onTouchModeChanged(quint8 touchMode);
 	void onTouchModeSettabilityChanged(bool settable);
@@ -239,6 +255,8 @@ private:
 	void onSerialNumberChanged(const QString &serial);
 	void onSoftwareVersionChanged(const QString &swVersion);
 
+	void onUnpairReasonChanged(quint8 unpairReason);
+	void onRebootReasonChanged(quint8 rebootReason);
 
 	Qt::Key convertCDIKeyCode(quint16 cdiKeyCode) const;
 

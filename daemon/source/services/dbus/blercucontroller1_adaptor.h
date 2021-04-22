@@ -57,6 +57,9 @@ class BleRcuController1Adaptor : public DBusAbstractAdaptor
 	            "    <method name=\"IsReady\">\n"
 	            "      <annotation value=\"true\" name=\"org.freedesktop.DBus.Method.NoReply\"/>\n"
 	            "    </method>\n"
+	            "    <method name=\"Unpair\">\n"
+	            "      <arg direction=\"in\" type=\"s\" name=\"address\"/>\n"
+	            "    </method>\n"
 	            "    <signal name=\"DeviceAdded\">\n"
 	            "      <arg type=\"o\" name=\"path\"/>\n"
 	            "      <arg type=\"s\" name=\"address\"/>\n"
@@ -95,6 +98,8 @@ public slots:
 	void StartScanning(quint32 timeout, const QDBusMessage &message);
 
 	QList<QDBusObjectPath> GetDevices(const QDBusMessage &message);
+
+	void Unpair(const QString &address, const QDBusMessage &message);
 
 	Q_NOREPLY void IsReady();
 	void Shutdown();

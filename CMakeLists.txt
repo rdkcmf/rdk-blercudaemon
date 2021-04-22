@@ -53,16 +53,14 @@ endif()
 
 
 # Add definition to determine RDK build
+if( RDK STREQUAL "TRUE" )
 set( RDK TRUE )
 add_definitions( -DRDK )
+endif()
 
-set( RDK_PLATFORM "XI6" CACHE STRING "Set the target RDK platform" )
-string( TOUPPER "${RDK_PLATFORM}" RDK_PLATFORM )
-
-if( RDK_PLATFORM STREQUAL "XI6" )
-    add_definitions( -DRDK_PLATFORM=XI6 )
-else()
-    message( FATAL_ERROR "Unknown RDK_PLATFORM '${RDK_PLATFORM}'" )
+if ( ENABLE_IRPAIRING )
+    add_definitions( -DENABLE_IRPAIRING=1 )
+    add_definitions( -DENABLE_PAIRING_SERVER=1 )
 endif()
 
 

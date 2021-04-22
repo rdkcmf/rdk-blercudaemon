@@ -81,6 +81,7 @@ public:
 		InfraredService = 0x10,
 		TouchService = 0x20,
 		UpgradeService = 0x40,
+		RemoteControlService = 0x80,
 	};
 	Q_DECLARE_FLAGS(Services, Service)
 

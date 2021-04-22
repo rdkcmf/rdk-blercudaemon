@@ -10,7 +10,8 @@ HEADERS += \
 	$$PWD/gatt_infraredservice.h \
 	$$PWD/gatt_infraredsignal.h \
 	$$PWD/gatt_touchservice.h \
-	$$PWD/gatt_upgradeservice.h
+	$$PWD/gatt_upgradeservice.h \
+	$$PWD/gatt_remotecontrolservice.h
 
 SOURCES += \
 	$$PWD/gatt_services.cpp \
@@ -22,7 +23,8 @@ SOURCES += \
 	$$PWD/gatt_infraredservice.cpp \
 	$$PWD/gatt_infraredsignal.cpp \
 	$$PWD/gatt_touchservice.cpp \
-	$$PWD/gatt_upgradeservice.cpp
+	$$PWD/gatt_upgradeservice.cpp \
+	$$PWD/gatt_remotecontrolservice.cpp
 
 OTHER_FILES += \
 	$$PWD/CMakeLists.txt

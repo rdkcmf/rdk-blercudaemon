@@ -47,6 +47,7 @@ BleRcuControllerImpl::BleRcuControllerImpl(const QSharedPointer<const ConfigSett
 	, m_lastError(BleRcuError::NoError)
 	, m_maxManagedDevices(1)
 	, m_state(Initialising)
+	, m_ignoreScannerSignal(false)
 {
 
 	// state is sent in signals so register it
@@ -288,6 +289,7 @@ int BleRcuControllerImpl::pairingCode() const
  */
 bool BleRcuControllerImpl::startPairing(quint8 filterByte, quint8 pairingCode)
 {
+	m_ignoreScannerSignal = false;
 	// if currently scanning then we have to cancel that first before processing
 	// the IR pairing request (nb - pairing request can only come to this
 	// function from an IR event)
@@ -357,6 +359,11 @@ bool BleRcuControllerImpl::startPairingMacHash(quint8 filterByte, quint8 macHash
 	// the IR pairing request (nb - pairing request can only come to this
 	// function from an IR event)
 	if (m_scannerStateMachine.isRunning()) {
+		// When the scanner state machine is stopped without any remotes being paired,
+		// it surfaces a failed status.  In this case, we simply want to stop the scanning
+		// state machine without broadcasting a FAILED status and continue immediately with
+		// IR pairing.
+		m_ignoreScannerSignal = true;
 		m_scannerStateMachine.stop();
 
 		qWarning("received IR pairing request in scanning mode, disabling"
@@ -436,6 +443,8 @@ bool BleRcuControllerImpl::isScanning() const
  */
 bool BleRcuControllerImpl::startScanning(int timeoutMs)
 {
+	m_ignoreScannerSignal = false;
+
 	// check we're not currently pairing
 	if (m_pairingStateMachine.isRunning()) {
 		qWarning("currently performing pairing, cannot start new scan");
@@ -643,6 +652,21 @@ void BleRcuControllerImpl::removeLastConnectedDevice()
 /*!
 	\internal
 
+	Queued function call to unpair a device
+
+	\sa removeDevice()
+ */
+bool BleRcuControllerImpl::unpairDevice(const BleAddress &address) const
+{
+	qMilestone() << "unpairing device on external request" << address;
+	// ask bluez to remove it, this will disconnect and unpair the device
+	return m_adapter->removeDevice(address);
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	\internal
+
 	Queued slot called when the pairing state machine has started.
  */
 void BleRcuControllerImpl::onStartedPairing()
@@ -804,8 +828,12 @@ void BleRcuControllerImpl::onFinishedScanning()
 void
 BleRcuControllerImpl::onFailedScanning()
 {
-	m_state = Failed;
-	emit stateChanged(Failed);
+	if (m_ignoreScannerSignal) {
+		m_ignoreScannerSignal = false;
+	} else {
+		m_state = Failed;
+		emit stateChanged(Failed);
+	}
 }
 
 // -----------------------------------------------------------------------------

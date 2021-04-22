@@ -75,6 +75,8 @@ public:
 	QSet<BleAddress> managedDevices() const override;
 	QSharedPointer<BleRcuDevice> managedDevice(const BleAddress &address) const override;
 
+	bool unpairDevice(const BleAddress &address) const override;
+
 private:
 	void syncManagedDevices();
 	void removeLastConnectedDevice();
@@ -109,6 +111,8 @@ private:
 	int m_maxManagedDevices;
 
 	State m_state;
+
+	bool m_ignoreScannerSignal;
 };
 
 #endif // !defined(BLERCUCONTROLLER_P_H)

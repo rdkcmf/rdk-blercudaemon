@@ -124,6 +124,7 @@ public:
 	QSharedPointer<BleRcuInfraredService> infraredService() const override;
 	QSharedPointer<BleRcuTouchService> touchService() const override;
 	QSharedPointer<BleRcuUpgradeService> upgradeService() const override;
+	QSharedPointer<BleRcuRemoteControlService> remoteControlService() const override;
 
 private:
 	bool init(const QDBusConnection &bluezDBusConn,

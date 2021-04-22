@@ -126,7 +126,8 @@
 					"deviceInfo",
 					"findMe",
 					"infrared",
-					"upgrade"
+					"upgrade",
+					"remoteControl"
 				]
 			}
 		},

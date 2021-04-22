@@ -276,6 +276,7 @@ QString BleUuid::longName() const
 			case SkyQVoice:                 return QStringLiteral("com.sky.service.skyq_voice");
 			case SkyQInfrared:              return QStringLiteral("com.sky.service.skyq_infrared");
 			case SkyQFirmwareUpgrade:       return QStringLiteral("com.sky.service.skyq_firmware_upgrade");
+			case ComcastRemoteControl:      return QStringLiteral("com.sky.service.comcast_remote_control");
 
 			case AudioCodecs:               return QStringLiteral("com.sky.characteristic.audio_codecs");
 			case AudioGain:                 return QStringLiteral("com.sky.characteristic.audio_gain");
@@ -287,6 +288,9 @@ QString BleUuid::longName() const
 			case EmitInfraredSignal:        return QStringLiteral("com.sky.characteristic.infrared_emit");
 			case FirmwareControlPoint:      return QStringLiteral("com.sky.characteristic.firmware_control_point");
 			case FirmwarePacket:            return QStringLiteral("com.sky.characteristic.firmware_packet");
+			case UnpairReason:              return QStringLiteral("com.sky.characteristic.unpair_reason");
+			case RebootReason:              return QStringLiteral("com.sky.characteristic.reboot_reason");
+			case RcuAction:                 return QStringLiteral("com.sky.characteristic.rcu_action");
 
 			case InfraredSignalReference:   return QStringLiteral("com.sky.descriptor.infrared_signal_reference");
 			case InfraredSignalConfiguration: return QStringLiteral("com.sky.descriptor.infrared_signal_configuration");
@@ -356,6 +360,7 @@ QString BleUuid::name() const
 			case SkyQVoice:                 return QStringLiteral("SkyQ Voice");
 			case SkyQInfrared:              return QStringLiteral("SkyQ Infrared");
 			case SkyQFirmwareUpgrade:       return QStringLiteral("SkyQ Firmware Upgrade");
+			case ComcastRemoteControl:      return QStringLiteral("Comcast Remote Control");
 
 			case AudioCodecs:               return QStringLiteral("Audio Codecs");
 			case AudioGain:                 return QStringLiteral("Audio Gain");
@@ -367,6 +372,9 @@ QString BleUuid::name() const
 			case EmitInfraredSignal:        return QStringLiteral("Emit Infrared Signal");
 			case FirmwareControlPoint:      return QStringLiteral("Firmware ControlPoint");
 			case FirmwarePacket:            return QStringLiteral("Firmware Packet");
+			case RebootReason:              return QStringLiteral("Unpair Reason");
+			case UnpairReason:              return QStringLiteral("Reboot Reason");
+			case RcuAction:                 return QStringLiteral("RCU Action");
 
 			case InfraredSignalReference:   return QStringLiteral("Infrared Signal Reference");
 			case InfraredSignalConfiguration: return QStringLiteral("Infrared Signal Configuration");

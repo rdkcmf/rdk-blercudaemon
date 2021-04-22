@@ -45,7 +45,7 @@ GattAudioService::GattAudioService()
 	: BleRcuAudioService(nullptr)
 	, m_packetsPerFrame(5)
 	, m_timeoutEventId(-1)
-	, m_gainLevel(INT32_MIN)
+	, m_gainLevel(0xFF)
 {
 	// clear the last stats
 	m_lastStats.lastError = NoError;
@@ -247,6 +247,8 @@ bool GattAudioService::start(const QSharedPointer<const BleGattService> &gattSer
 		qWarning("failed to get one or more gatt characteristics");
 		return false;
 	}
+
+	requestGainLevel();
 
 	// check we're not already started
 	if (m_stateMachine.state() != IdleState) {
@@ -683,25 +685,58 @@ void GattAudioService::onOutputPipeClosed()
 	\note This may block for the slave latency period, which is 5 seconds.
 
  */
-qint32 GattAudioService::gainLevel() const
+quint8 GattAudioService::gainLevel() const
 {
-	// check if the service is running, if not return the previous value
-	if (!m_audioGainCharacteristic || m_stateMachine.inState(IdleState))
-		return m_gainLevel;
-
-	/* TODO:
-	Future<QByteArray> reply = m_audioGainCharacteristic->readValue();
-	reply.waitForFinished();
-
-	if (!reply.isValid() || reply.isError())
-		return m_gainLevel;
-
-	QByteArray value = reply.value();
-	if (value.length() != 1)
-		return m_gainLevel;
-	*/
-
 	return m_gainLevel;
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	\internal
+
+	Sends a request to org.bluez.GattCharacteristic1.Value() to get the value
+	propery of the characteristic which contains the current gain level.
+
+ */
+void GattAudioService::requestGainLevel()
+{
+	// lambda called if an error occurs enabling the notifications
+	const std::function<void(const QString&, const QString&)> errorCallback =
+		[this](const QString &errorName, const QString &errorMessage)
+		{
+			qError() << "failed to get gain level due to"
+			         << errorName << errorMessage;
+		};
+
+	// lamda called if notifications are successifully enabled
+	const std::function<void(const QByteArray &value)> successCallback =
+		[this](const QByteArray &value)
+		{
+			// sanity check the data received
+			if (value.length() != 1) {
+				qError("gain value received has invalid length (%d bytes)",
+					value.length());
+			} else {
+				qInfo() << "Successfully read from RCU gain level =" << static_cast<quint8>(value.at(0));
+				m_gainLevel = static_cast<quint8>(value.at(0));
+			}
+		};
+
+
+	// send a request to the bluez daemon to start notifing us of battery
+	// level changes
+	Future<QByteArray> result = m_audioGainCharacteristic->readValue();
+	if (!result.isValid() || result.isError()) {
+		errorCallback(result.errorName(), result.errorMessage());
+		return;
+	} else if (result.isFinished()) {
+		successCallback(result.result());
+		return;
+	}
+
+	// connect functors to the future async completion
+	result.connectErrored(this, errorCallback);
+	result.connectFinished(this, successCallback);
 }
 
 // -----------------------------------------------------------------------------
@@ -714,15 +749,41 @@ qint32 GattAudioService::gainLevel() const
 	\note This may block for the slave latency period, which is 5 seconds.
 
  */
-void GattAudioService::setGainLevel(qint32 level)
+void GattAudioService::setGainLevel(quint8 level)
 {
 	// check if the service is running, if not give up
 	if (!m_audioGainCharacteristic || m_stateMachine.inState(IdleState))
 		return;
 
-	// fire and forget the setting (TODO: add a failure handler)
-	QByteArray value(1, char(level & 0xff));
-	m_audioGainCharacteristic->writeValue(value);
+	// lambda called if an error occurs disabling find me
+	const std::function<void(const QString&, const QString&)> errorCallback =
+		[this](const QString &errorName, const QString &errorMessage)
+		{
+			qError() << "failed to write audio gain level due to" << errorName << errorMessage;
+		};
+
+	// lamda called findme was disabled
+	const std::function<void()> successCallback =
+		[this]()
+		{
+			qInfo() << "successfully wrote audio gain level, reading new value";
+			requestGainLevel();
+		};
+
+
+	const QByteArray value(1, level);
+	Future<> result = m_audioGainCharacteristic->writeValue(value);
+	if (!result.isValid() || result.isError()) {
+		errorCallback(result.errorName(), result.errorMessage());
+		return;
+	} else if (result.isFinished()) {
+		successCallback();
+		return;
+	}
+
+	// connect functors to the future async completion
+	result.connectErrored(this, errorCallback);
+	result.connectFinished(this, successCallback);
 }
 
 // -----------------------------------------------------------------------------

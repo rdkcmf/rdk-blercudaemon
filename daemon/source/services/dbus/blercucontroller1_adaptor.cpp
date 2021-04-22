@@ -292,6 +292,21 @@ QList<QDBusObjectPath> BleRcuController1Adaptor::GetDevices(const QDBusMessage &
 
 // -----------------------------------------------------------------------------
 /*!
+	DBus method call handler for com.sky.BleRcuController1.Unpair
+
+ */
+void BleRcuController1Adaptor::Unpair(const QString &address,
+                                      const QDBusMessage &message)
+{
+	if (!m_controller->unpairDevice(BleAddress(address))) {
+		sendErrorReply(message, BleRcuError::errorString(BleRcuError::General),
+		               QStringLiteral("Failed to unpair device"));
+		return;
+	}
+}
+
+// -----------------------------------------------------------------------------
+/*!
 	DBus method call handler for com.sky.BleRcuController1.IsReady
 
  */

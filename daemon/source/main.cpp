@@ -71,6 +71,15 @@
 #endif
 
 
+#ifdef BREAKPAD_SUPPORT
+#include "client/linux/handler/exception_handler.h"
+
+static bool minidump_callback(const google_breakpad::MinidumpDescriptor& descriptor, void* context, bool succeeded) {
+  qError("Minidump location: %s Status: %s\n", descriptor.path(), succeeded ? "SUCCEEDED" : "FAILED");
+  return succeeded;
+}
+#endif
+
 
 // -----------------------------------------------------------------------------
 /*!
@@ -249,6 +258,18 @@ int main(int argc, char *argv[])
 	// disable SIGPIPE early
 	disableSigPipe();
 
+#ifdef BREAKPAD_SUPPORT
+	std::string minidump_path = "/opt/minidumps";
+	FILE *fp= NULL;;
+	if(( fp = fopen("/tmp/.SecureDumpEnable", "r")) != NULL) {
+		minidump_path = "/opt/secure/minidumps";
+		fclose(fp);
+	}
+
+	google_breakpad::MinidumpDescriptor descriptor(minidump_path.c_str());
+	google_breakpad::ExceptionHandler eh(descriptor, NULL, minidump_callback, NULL, true, -1);
+#endif
+
 
 	// setup the logging very early (before command line parsing). On debug
 	// builds we enable the console and EthanLog, plus warnings, errors, fatals
@@ -323,9 +344,10 @@ int main(int argc, char *argv[])
 
 
 	// create the IR database
-	QSharedPointer<IrDatabase> irDatabase =
-		IrDatabase::create(QStringLiteral(":/irdb.sqlite"));
-
+	QSharedPointer<IrDatabase> irDatabase;
+#ifndef RDK
+	irDatabase = IrDatabase::create(QStringLiteral(":/irdb.sqlite"));
+#endif
 	// initialize BTRMGR API before it is used in BleRcuController
 	const auto btrMgrInitializer = BtrMgrAdapter::ApiInitializer{};
 
