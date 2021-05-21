@@ -63,7 +63,7 @@ BleRcuControllerProxy::BleRcuControllerProxy(const QDBusConnection &dbusConn,
 
 #if (AI_BUILD_TYPE == AI_DEBUG)
 	// create and attach the dbus adaptor for the debug interface(s) to ourselves
-	m_dbusAdaptors.append( new BleRcuDebug1Adaptor(this) );
+	m_dbusAdaptors.append( new BleRcuDebug1Adaptor(this, controller) );
 	m_dbusAdaptors.append( new BleRcuHciCapture1Adaptor(this, m_dbusObjectPath, -1) );
 #endif
 

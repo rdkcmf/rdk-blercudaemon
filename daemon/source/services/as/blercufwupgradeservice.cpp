@@ -528,7 +528,7 @@ void BleRcuFwUpgradeService::onUploadFileDelete(const QUuid &uuid,
 	// remove from the map
 	m_uploadedFiles.erase(it);
 
-	qDebug("deleted temp f/w file with uuid", qPrintable(uuid.toString()));
+	qDebug("deleted temp f/w file with uuid '%s'", qPrintable(uuid.toString()));
 
 	// send a success reply
 	request.sendReply(200);

@@ -57,7 +57,7 @@ class PromisePrivateBase : public QObject
 
 public:
 	explicit PromisePrivateBase(QObject *parent = nullptr);
-	~PromisePrivateBase();
+	~PromisePrivateBase() override;
 
 public:
 	void setError(const QString &name, const QString &message);
@@ -87,14 +87,13 @@ private:
 
 
 template <typename T>
-class PromisePrivate : public PromisePrivateBase
+class PromisePrivate final : public PromisePrivateBase
 {
 public:
 	explicit PromisePrivate(QObject *parent = nullptr)
 		: PromisePrivateBase(parent)
 	{ }
-	virtual ~PromisePrivate()
-	{ }
+	~PromisePrivate() final = default;
 
 public:
 	void setFinished(const T &result);
@@ -134,14 +133,14 @@ Q_INLINE_TEMPLATE T PromisePrivate<T>::result() const
 
 
 template <>
-class PromisePrivate<void> : public PromisePrivateBase
+class PromisePrivate<void> final : public PromisePrivateBase
 {
 public:
 	explicit PromisePrivate(QObject *parent = nullptr)
 		: PromisePrivateBase(parent)
 	{ }
-	virtual ~PromisePrivate()
-	{ }
+	~PromisePrivate() final = default;
+
 
 public:
 	void setFinished();
@@ -177,11 +176,10 @@ public:
 	Promise(const Promise<T> &other)
 		: d(other.d)
 	{ }
-	Promise(Promise<T> &&other)
+	Promise(Promise<T> &&other) noexcept
 		: d(std::move(other.d))
 	{ }
-	~Promise()
-	{ }
+	~Promise() = default;
 
 
 public:
@@ -236,11 +234,10 @@ public:
 	Promise(const Promise<void> &other)
 		: d(other.d)
 	{ }
-	Promise(Promise<void> &&other)
+	Promise(Promise<void> &&other) noexcept
 		: d(std::move(other.d))
 	{ }
-	~Promise()
-	{ }
+	~Promise() = default;
 
 public:
 	void setFinished() const

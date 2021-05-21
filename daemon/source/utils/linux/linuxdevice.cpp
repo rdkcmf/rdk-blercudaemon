@@ -22,7 +22,6 @@
 //  SkyBluetoothRcu
 //
 
-#include <sys/sysmacros.h>
 #include "linuxdevice.h"
 #include "logging.h"
 

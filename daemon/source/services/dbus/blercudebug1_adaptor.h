@@ -32,10 +32,13 @@
 #include <QList>
 #include <QVariant>
 #include <QByteArray>
+#include <QSharedPointer>
 
 #include <QtDBus>
 
-class BleRcuDebug1Adaptor : public DBusAbstractAdaptor
+class BleRcuController;
+
+class BleRcuDebug1Adaptor final : public DBusAbstractAdaptor
 {
 	Q_OBJECT
 	Q_CLASSINFO("D-Bus Interface", "com.sky.blercu.Debug1")
@@ -59,8 +62,9 @@ public:
 	Q_PROPERTY(quint32 LogLevels READ logLevels WRITE setLogLevels)
 
 public:
-	BleRcuDebug1Adaptor(QObject *parent);
-	virtual ~BleRcuDebug1Adaptor();
+	BleRcuDebug1Adaptor(QObject *parent,
+	                    const QSharedPointer<BleRcuController> &controller);
+	~BleRcuDebug1Adaptor() final = default;
 
 public:
 	bool isConsoleEnabled() const;
@@ -74,6 +78,10 @@ public:
 
 	quint32 logLevels() const;
 	void setLogLevels(quint32 levels);
+
+private:
+	const QSharedPointer<BleRcuController> m_controller;
+
 };
 
 #endif // !defined(BLERCUDEBUG1_ADAPTOR_H)

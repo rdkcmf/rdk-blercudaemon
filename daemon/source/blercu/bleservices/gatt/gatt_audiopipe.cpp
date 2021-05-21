@@ -98,9 +98,9 @@ struct __attribute__((packed)) WaveFileHeader {
 	into the pipe.
 
  */
-GattAudioPipe::GattAudioPipe(int outputPipeFd, QObject *parent)
+GattAudioPipe::GattAudioPipe(OutputEncoding encoding, int outputPipeFd, QObject *parent)
 	: QObject(parent)
-	, m_encoding(BleRcuAudioService::PCM16)
+	, m_encoding(encoding)
 	, m_codec(new ADPCMCodec)
 	, m_outputPipeRdFd(-1)
 	, m_outputPipeWrFd(-1)
@@ -125,9 +125,14 @@ GattAudioPipe::GattAudioPipe(int outputPipeFd, QObject *parent)
 
 
 	} else {
+		// use O_DIRECT for 'packet' pipes if ADCPM encoding is used
+		int flags = O_CLOEXEC | O_NONBLOCK;
+		if (m_encoding == OutputEncoding::ADPCM)
+			flags |= O_DIRECT;
+
 		// create the new pipe for output
 		int fds[2];
-		if (pipe2(fds, O_CLOEXEC | O_NONBLOCK) != 0) {
+		if (pipe2(fds, flags) != 0) {
 			qErrnoWarning(errno, "failed to create output audio pipe");
 			return;
 		}
@@ -196,16 +201,6 @@ bool GattAudioPipe::isOutputOpen() const
 	// try and empty write to the pipe, this will fail (with EPIPE) if the
 	// read size is closed - even though we aren't sending anything
 	return (::write(m_outputPipeWrFd, nullptr, 0) == 0);
-}
-
-// -----------------------------------------------------------------------------
-/*!
-	Sets the encoding of the data to be transmitted
-
- */
-void GattAudioPipe::setEncoding(BleRcuAudioService::Encoding encoding)
-{
-	m_encoding = encoding;
 }
 
 // -----------------------------------------------------------------------------
@@ -387,27 +382,35 @@ void GattAudioPipe::processAudioFrame(const quint8 frame[100])
 	m_frameCount++;
 
 
-	// feed the s/w decoder
-	int frame_size = 100;
-	if (m_encoding == BleRcuAudioService::PCM16) {
+	size_t bufferSize;
+	if (m_encoding == OutputEncoding::PCM16) {
+		// feed the s/w decoder
 		m_codec->decodeFrame(stepIndex, prevValue, frame + 4, (96 * 2), m_decodeBuffer);
-		frame_size = sizeof(m_decodeBuffer);
+		bufferSize = sizeof(m_decodeBuffer);
+
+	} else if (m_encoding == OutputEncoding::ADPCM) {
+		static_assert(sizeof(m_decodeBuffer) >= 100, "to small decode buffer size");
+
+		// just copy the raw data in ADCPM mode
+		memcpy(m_decodeBuffer, frame, 100);
+		bufferSize = 100;
+
+	} else {
+		qError("invalid output audio encoding format");
+		return;
 	}
 
 
 	// write the pcm data into the output pipe
 	if (Q_LIKELY(m_outputPipeWrFd >= 0)) {
-		ssize_t wr;
-		if (m_encoding == BleRcuAudioService::PCM16) {
-			wr = TEMP_FAILURE_RETRY(::write(m_outputPipeWrFd, m_decodeBuffer, frame_size));
-		} else {
-			wr = TEMP_FAILURE_RETRY(::write(m_outputPipeWrFd, frame, frame_size));
-		}
+
+		ssize_t wr = TEMP_FAILURE_RETRY(::write(m_outputPipeWrFd, m_decodeBuffer,
+		                                        bufferSize));
 		if (wr < 0) {
 
 			// check if the pipe is full
 			if ((errno == EWOULDBLOCK) || (errno == EAGAIN)) {
-				qWarning("voice audio pipe to AS is full, frame discarded");
+				qWarning("voice audio pipe is full, frame discarded");
 
 			} else {
 				// check if AS closed the pipe, this is not an error so don't
@@ -421,10 +424,9 @@ void GattAudioPipe::processAudioFrame(const quint8 frame[100])
 				onOutputPipeException(m_outputPipeWrFd);
 			}
 
-		} else if (wr != frame_size) {
-
+		} else if (static_cast<size_t>(wr) != bufferSize) {
 			qWarning("only %zd of the possible %zu bytes of audio data could be"
-			         " sent to AS", wr, frame_size);
+			         " sent", wr, bufferSize);
 		}
 
 	}

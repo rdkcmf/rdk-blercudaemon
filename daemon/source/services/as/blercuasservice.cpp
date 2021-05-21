@@ -72,8 +72,9 @@ static QString configJson()
 BleRcuASService::BleRcuASService(const QDBusConnection &dbusConn,
                                  QObject *parent)
 	: ASService(dbusConn, QStringLiteral("com.sky.as.btremotes"), configJson(), parent)
+	, m_asVersion(122)
 	, m_dbusConn(dbusConn)
-	, m_wsStatus(QSharedPointer<BleRcuStatusWebSocket>::create())
+	, m_wsStatus(QSharedPointer<BleRcuStatusWebSocket>::create(m_asVersion))
 {
 
 	// connect to the signal telling us that the ws has more data

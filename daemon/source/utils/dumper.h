@@ -66,7 +66,7 @@ public:
 	}
 	inline void pushIndent(int indent)
 	{
-		if ((m_stream->indent + indent) >= sizeof(Stream::indentBuf))
+		if ((m_stream->indent + indent) >= int(sizeof(Stream::indentBuf)))
 			indent = 0;
 
 		m_stream->indentStack.push(indent);

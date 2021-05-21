@@ -194,9 +194,9 @@ static QSharedPointer<QDBusConnection> setupDBus(CmdLineOptions::DBusType dbusTy
  */
 static QSharedPointer<BleRcuController> setupBleRcuController(const QSharedPointer<CmdLineOptions> &options,
                                                               const QSharedPointer<ConfigSettings> &config,
-                                                              const QSharedPointer<IrDatabase> &irDatabase,
                                                               const QSharedPointer<QDBusConnection> &clientDBusConn,
-                                                              const QSharedPointer<QDBusConnection> &debugDBusConn)
+                                                              const QSharedPointer<QDBusConnection> &debugDBusConn,
+                                                              const QSharedPointer<BleRcuAdapter> &adapter)
 {
 	// setup the linux device notifier (udev wrapper)
 	QSharedPointer<LinuxDeviceNotifier> devNotifier =
@@ -214,23 +214,6 @@ static QSharedPointer<BleRcuController> setupBleRcuController(const QSharedPoint
 		HidRawDeviceManager::create(devNotifier);
 	if (!hidrawDevManager) {
 		qFatal("failed to setup the hidraw device manager");
-	}
-
-	// create the factory for creating the BleRcu services for each device
-	QSharedPointer<BleRcuServicesFactory> servicesFactory =
-		QSharedPointer<BleRcuServicesFactory>::create(config,
-		                                              irDatabase);
-	if (!servicesFactory) {
-		qFatal("failed to setup the BLE services factory");
-	}
-
-	// create the bluetooth adapter proxy
-	QSharedPointer<BleRcuAdapter> adapter =
-		QSharedPointer<BleRcuAdapterBluez>::create(config,
-		                                           servicesFactory,
-		                                           QDBusConnection::systemBus());
-	if (!adapter || !adapter->isValid()) {
-		qFatal("failed to setup the BLE manager");
 	}
 
 	// create the controller object
@@ -351,9 +334,26 @@ int main(int argc, char *argv[])
 	// initialize BTRMGR API before it is used in BleRcuController
 	const auto btrMgrInitializer = BtrMgrAdapter::ApiInitializer{};
 
+	// create the factory for creating the BleRcu services for each device
+	QSharedPointer<BleRcuServicesFactory> servicesFactory =
+		QSharedPointer<BleRcuServicesFactory>::create(config,
+		                                              irDatabase);
+	if (!servicesFactory) {
+		qFatal("failed to setup the BLE services factory");
+	}
+
+	// create the bluetooth adapter proxy
+	QSharedPointer<BleRcuAdapter> adapter =
+		QSharedPointer<BleRcuAdapterBluez>::create(config,
+		                                           servicesFactory,
+		                                           QDBusConnection::systemBus());
+	if (!adapter || !adapter->isValid()) {
+		qFatal("failed to setup the BLE manager");
+	}
+
 	// create the controller that manages the adapter and paired devices
 	QSharedPointer<BleRcuController> controller =
-		setupBleRcuController(options, config, irDatabase, dbusConn, debugDBusConn);
+		setupBleRcuController(options, config, dbusConn, debugDBusConn, adapter);
 
 
 	// give the controller to the Android service, the service is now useful
@@ -411,6 +411,17 @@ int main(int argc, char *argv[])
 
 	// finally start the Qt event loop
 	int exitCode = QCoreApplication::exec();
+
+	qMilestone("Checking if bluez adapter is trying to discover...");
+	if (adapter->isDiscovering()) {
+		qMilestone("Stopping discovery session");
+		adapter->stopDiscovery();
+	}
+	qMilestone("Checking if bluez adapter is pairable...");
+	if (adapter->isPairable()) {
+		qMilestone("Disabling bluez adapter pairability");
+		adapter->disablePairable();
+	}
 
 	qMilestone("BleRcuDaemon shutting down");
 

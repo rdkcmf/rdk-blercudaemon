@@ -25,8 +25,6 @@
 #ifndef GATT_AUDIOPIPE_H
 #define GATT_AUDIOPIPE_H
 
-#include "blercu/bleservices/blercuaudioservice.h"
-
 #include "utils/filedescriptor.h"
 
 #include <QObject>
@@ -35,12 +33,11 @@
 #include <QSharedPointer>
 
 
-class BleRcuAudioService;
 class VoiceCodec;
 class UnixPipeNotifier;
 
 
-class GattAudioPipe : public QObject
+class GattAudioPipe final : public QObject
 {
 	Q_OBJECT
 
@@ -55,16 +52,25 @@ public:
 	Q_ENUMS(InputCodec)
 #endif
 
+	enum OutputEncoding {
+		PCM16,
+		ADPCM
+	};
+#if QT_VERSION > QT_VERSION_CHECK(5, 4, 0)
+	Q_ENUM(OutputEncoding)
+#else
+	Q_ENUMS(OutputEncoding)
+#endif
+
 public:
-	explicit GattAudioPipe(int outputPipeFd = -1, QObject *parent = nullptr);
+	explicit GattAudioPipe(OutputEncoding encoding, int outputPipeFd = -1,
+	                       QObject *parent = nullptr);
 	~GattAudioPipe() final;
 
 public:
 	bool isValid() const;
 
 	bool isOutputOpen() const;
-
-	void setEncoding(BleRcuAudioService::Encoding encoding);
 
 	bool start();
 	void stop();
@@ -85,7 +91,7 @@ private:
 	void processAudioFrame(const quint8 frame[100]);
 
 private:
-	BleRcuAudioService::Encoding m_encoding;
+	const OutputEncoding m_encoding;
 
 	VoiceCodec *m_codec;
 

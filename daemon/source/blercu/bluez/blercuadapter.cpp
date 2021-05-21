@@ -834,6 +834,8 @@ bool BleRcuAdapterBluez::setAdapterDiscoveryFilter()
 	// check if the adapter is currently in discovery mode, stop it if so
 	if (Q_UNLIKELY(m_discovering)) {
 
+		qWarning("bt adapter is unexpectedly already in discovery mode on start-up");
+
 		QDBusPendingReply<> reply = m_adapterProxy->StopDiscovery();
 		reply.waitForFinished();
 
@@ -841,6 +843,14 @@ bool BleRcuAdapterBluez::setAdapterDiscoveryFilter()
 			qError() << "failed to stop discovery due to" << reply.error();
 			// not fatal, fall through
 		}
+
+		// get the new state, it should be false but just in case
+		m_discovering = m_adapterProxy->discovering();
+
+		// and also just in case, start the watchdog to ensure discovery has
+		// stopped later
+		m_discoveryRequested = StopDiscovery;
+		m_discoveryWatchdog.start();
 	}
 
 	// attempt to set the filter to LE
@@ -973,7 +983,7 @@ bool BleRcuAdapterBluez::startDiscovery(int pairingCode)
 	// set the expected discovery state for the watchdog
 	m_discoveryRequested = StartDiscovery;
 
-	// if not discovery don't send a request
+	// if already discovering don't send a request
 	if (m_discovering)
 		return true;
 

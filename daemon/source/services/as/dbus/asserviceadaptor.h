@@ -44,7 +44,7 @@
 class Player;
 class ASService;
 
-class ASServiceAdaptor : public QDBusAbstractAdaptor
+class ASServiceAdaptor final : public QDBusAbstractAdaptor
 {
     Q_OBJECT
     Q_CLASSINFO("D-Bus Interface", "com.sky.as.Service1")
@@ -109,7 +109,7 @@ public:
                      const QString &dbusObjectPath,
                      const QString &serviceConfig,
                      ASService *parent);
-    virtual ~ASServiceAdaptor();
+    ~ASServiceAdaptor() final;
 
 public:
     struct Response
@@ -131,7 +131,7 @@ public:
         { }
 
         Response(uint code_, const QString &body_, const QMap<QString,QString> &headers_)
-            : code(code_), body(body_), headers(headers_)
+            : code(code_), headers(headers_), body(body_)
         { }
 
         Response(uint code_, QString &&body_)
@@ -139,7 +139,7 @@ public:
         { }
 
         Response(uint code_, QString &&body_, QMap<QString,QString> &&headers_)
-            : code(code_), body(std::move(body_)), headers(std::move(headers_))
+            : code(code_), headers(std::move(headers_)), body(std::move(body_))
         { }
     };
 

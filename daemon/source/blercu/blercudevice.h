@@ -52,13 +52,12 @@ class BleRcuDevice : public QObject
 	Q_OBJECT
 
 protected:
-	BleRcuDevice(QObject *parent = nullptr)
+	explicit BleRcuDevice(QObject *parent = nullptr)
 		: QObject(parent)
 	{ }
 
 public:
-	virtual ~BleRcuDevice()
-	{ }
+	~BleRcuDevice() override = default;
 
 public:
 	virtual void dump(Dumper out) const = 0;
@@ -75,6 +74,11 @@ public:
 	virtual QString name() const = 0;
 
 	// virtual Future<qint16> rssi() const = 0;
+
+	virtual int deviceId() const
+	{
+		return -1;
+	}
 
 public:
 	virtual QSharedPointer<BleRcuAudioService> audioService() const = 0;

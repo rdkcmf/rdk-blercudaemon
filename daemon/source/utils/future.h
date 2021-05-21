@@ -67,7 +67,7 @@ private:
 	friend class Promise<T>;
 	friend class Promise<void>;
 
-	Future(const QSharedPointer<const PromisePrivate<T>> &promise)
+	explicit Future(const QSharedPointer<const PromisePrivate<T>> &promise)
 		: m_promise(promise)
 	{ }
 
@@ -77,11 +77,10 @@ public:
 	Future(const Future &other)
 		: m_promise(other.m_promise)
 	{ }
-	Future(Future &&other)
+	Future(Future &&other) noexcept
 		: m_promise(std::move(other.m_promise))
 	{ }
-	~Future()
-	{ }
+	~Future() = default;
 
 	Future& operator=(const Future &other)
 	{ m_promise = other.m_promise; return *this; }

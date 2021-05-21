@@ -79,7 +79,7 @@ void ASService::onRequest(const ASRequest &request)
  */
 QVariantMap ASService::systemInfo()
 {
-
+	return QVariantMap();
 }
 
 // -----------------------------------------------------------------------------

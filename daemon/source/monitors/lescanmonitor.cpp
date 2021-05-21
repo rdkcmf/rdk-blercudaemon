@@ -427,7 +427,7 @@ bool LEScanMonitorPrivate::processEventPacket(const quint8 *data, ssize_t len) c
 	len -= sizeof(hci_event_hdr);
 
 	if (hdr->evt == EVT_CMD_COMPLETE) {
-		if (len < sizeof(evt_cmd_complete)) {
+		if (len < static_cast<ssize_t>(sizeof(evt_cmd_complete))) {
 			qWarning("invalid size of EVT_CMD_COMPLETE packet");
 			return false;
 		}
@@ -456,7 +456,7 @@ bool LEScanMonitorPrivate::processEventPacket(const quint8 *data, ssize_t len) c
 		return true;
 
 	} else if (hdr->evt == EVT_CMD_STATUS) {
-		if (len < sizeof(evt_cmd_status)) {
+		if (len < static_cast<ssize_t>(sizeof(evt_cmd_status))) {
 			qWarning("invalid size of EVT_CMD_STATUS packet");
 			return false;
 		}

@@ -44,7 +44,7 @@ class BleRcuStatusWebSocket;
 class BleRcuFwUpgradeService;
 
 
-class BleRcuASService : public ASService
+class BleRcuASService final : public ASService
 {
 	Q_OBJECT
 
@@ -83,6 +83,7 @@ private:
 	EXECUTOR(onRequestIRCodesClearCode);
 
 private:
+	const int m_asVersion;
 	const QDBusConnection m_dbusConn;
 
 	QSharedPointer<BleRcuController> m_controller;

@@ -61,8 +61,9 @@
 
 
 
-BleRcuStatusWebSocket::BleRcuStatusWebSocket(QObject *parent)
+BleRcuStatusWebSocket::BleRcuStatusWebSocket(int asVersion, QObject *parent)
 	: QObject(parent)
+	, m_asVersion(asVersion)
 	, m_controllerState(BleRcuController::Initialising)
 	, m_pairingInProgress(false)
 	, JSON {
@@ -87,7 +88,8 @@ BleRcuStatusWebSocket::BleRcuStatusWebSocket(QObject *parent)
 	// just pairing status
 	QJsonObject root;
 	root[JSON.status] = controllerStateString(m_controllerState);
-	root[JSON.pairinginprogress] = m_pairingInProgress;
+	if (m_asVersion < 109)
+		root[JSON.pairinginprogress] = m_pairingInProgress;
 	root[JSON.remotes] = QJsonArray();
 
 	// create the json string
@@ -312,7 +314,7 @@ void BleRcuStatusWebSocket::onInputDeviceRemoved(const InputDeviceInfo &info)
 	\internal
 
 	Used to update the internal BLE address to deviceId map and send out any
-	notifications to the Java service on changes.
+	notifications to the AS service on changes.
 
  */
 void BleRcuStatusWebSocket::updateDeviceIdMap(const BleAddress &address,
@@ -384,7 +386,10 @@ void BleRcuStatusWebSocket::addDeviceToStatus(const QSharedPointer<BleRcuDevice>
 	remote[JSON.bdaddr] = bdaddr.toString();
 	remote[JSON.connected] = device->isReady();
 	remote[JSON.name] = device->name();
-	remote[JSON.deviceid] = m_deviceIdMap.value(bdaddr, -1);
+
+	const int deviceId = m_deviceIdMap.value(bdaddr, device->deviceId());
+	if (deviceId >= 0)
+		remote[JSON.deviceid] = deviceId;
 
 	// populate the device info fields
 	updateDeviceInfo(device, &remote);
@@ -409,17 +414,30 @@ void BleRcuStatusWebSocket::addDeviceToStatus(const QSharedPointer<BleRcuDevice>
 void BleRcuStatusWebSocket::updateDeviceInfo(const QSharedPointer<BleRcuDevice> &device,
                                              QJsonObject *remote)
 {
+	struct DeviceInfoField {
+		QString jsonName;
+		std::function<QString(BleRcuDeviceInfoService*)> getter;
+	};
+	static const QVector<DeviceInfoField> infoFields = {
+		{ JSON.make,        &BleRcuDeviceInfoService::manufacturerName  },
+		{ JSON.model,       &BleRcuDeviceInfoService::modelNumber       },
+		{ JSON.hwrev,       &BleRcuDeviceInfoService::hardwareRevision  },
+		{ JSON.serialno,    &BleRcuDeviceInfoService::serialNumber      },
+		{ JSON.rcuswver,    &BleRcuDeviceInfoService::softwareVersion   },
+		{ JSON.btlswver,    &BleRcuDeviceInfoService::firmwareVersion   },
+	};
+
 	// populate the device info fields
 	QSharedPointer<BleRcuDeviceInfoService> infoService = device->deviceInfoService();
 	if (!infoService) {
 		qWarning() << "failed to get device info service for" << device->address();
 	} else {
-		remote->insert(JSON.make, infoService->manufacturerName());
-		remote->insert(JSON.model, infoService->modelNumber());
-		remote->insert(JSON.hwrev, infoService->hardwareRevision());
-		remote->insert(JSON.serialno, infoService->serialNumber());
-		remote->insert(JSON.rcuswver, infoService->softwareVersion());
-		remote->insert(JSON.btlswver,  infoService->firmwareVersion());
+		// add the fields if contain valid values
+		for (const DeviceInfoField &field : infoFields) {
+			const QString value = field.getter(infoService.get());
+			if (!value.isNull())
+				remote->insert(field.jsonName, value);
+		}
 	}
 
 	// and the battery level
@@ -427,7 +445,10 @@ void BleRcuStatusWebSocket::updateDeviceInfo(const QSharedPointer<BleRcuDevice> 
 	if (!battService) {
 		qWarning() << "failed to get device battery service for" << device->address();
 	} else {
-		remote->insert(JSON.batterylevel, battService->level());
+		// only reply with the battery level if valid
+		int battLevel = battService->level();
+		if ((battLevel >= 0) && (battLevel <= 100))
+			remote->insert(JSON.batterylevel, battLevel);
 	}
 }
 
@@ -709,7 +730,8 @@ void BleRcuStatusWebSocket::onInvalidatedWebSocket()
 	}
 
 	m_status[JSON.status] = controllerStateString(m_controllerState);
-	m_status[JSON.pairinginprogress] = m_pairingInProgress;
+	if (m_asVersion < 109)
+		m_status[JSON.pairinginprogress] = m_pairingInProgress;
 	m_status[JSON.remotes] = remotes;
 
 	// check if it's changed from last time

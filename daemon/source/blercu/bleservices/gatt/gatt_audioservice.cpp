@@ -822,8 +822,16 @@ Future<FileDescriptor> GattAudioService::startStreaming(Encoding encoding)
 	m_lastStats.expectedPackets = 0;
 
 
-	// check the encoding, currently we only support PCM16
-	if (encoding != BleRcuAudioService::PCM16 && encoding != BleRcuAudioService::ADPCM) {
+	// check the encoding
+	GattAudioPipe::OutputEncoding outputEncoding = GattAudioPipe::PCM16;
+	switch (encoding) {
+		case BleRcuAudioService::PCM16:
+			outputEncoding = GattAudioPipe::PCM16;
+			break;
+		case BleRcuAudioService::ADPCM:
+			outputEncoding = GattAudioPipe::ADPCM;
+			break;
+		default:
 		m_lastStats.lastError = StreamingError::InternalError;
 		return createErrorResult<FileDescriptor>(BleRcuError::InvalidArg,
 		                                         QStringLiteral("Unsupported audio encoding"));
@@ -831,14 +839,13 @@ Future<FileDescriptor> GattAudioService::startStreaming(Encoding encoding)
 
 
 	// create a new audio pipe for the client
-	m_audioPipe = QSharedPointer<GattAudioPipe>::create();
+	m_audioPipe = QSharedPointer<GattAudioPipe>::create(outputEncoding);
 	if (!m_audioPipe || !m_audioPipe->isValid()) {
 		m_audioPipe.reset();
 		m_lastStats.lastError = StreamingError::InternalError;
 		return createErrorResult<FileDescriptor>(BleRcuError::InvalidArg,
 		                                         QStringLiteral("Failed to create streaming pipe"));
 	}
-	m_audioPipe->setEncoding(encoding);
 
 
 	// create a promise to store the result of the streaming
@@ -879,8 +886,16 @@ Future<> GattAudioService::startStreamingTo(Encoding encoding, int fd)
 	m_lastStats.expectedPackets = 0;
 
 
-	// check the encoding, currently we only support PCM16
-	if (encoding != BleRcuAudioService::PCM16) {
+	// check the encoding
+	GattAudioPipe::OutputEncoding outputEncoding = GattAudioPipe::PCM16;
+	switch (encoding) {
+		case BleRcuAudioService::PCM16:
+			outputEncoding = GattAudioPipe::PCM16;
+			break;
+		case BleRcuAudioService::ADPCM:
+			outputEncoding = GattAudioPipe::ADPCM;
+			break;
+		default:
 		m_lastStats.lastError = StreamingError::InternalError;
 		return createErrorResult<>(BleRcuError::InvalidArg,
 		                           QStringLiteral("Unsupported audio encoding"));
@@ -888,7 +903,7 @@ Future<> GattAudioService::startStreamingTo(Encoding encoding, int fd)
 
 
 	// create a new audio pipe for the client
-	m_audioPipe = QSharedPointer<GattAudioPipe>::create(fd);
+	m_audioPipe = QSharedPointer<GattAudioPipe>::create(outputEncoding, fd);
 	if (!m_audioPipe || !m_audioPipe->isValid()) {
 		m_audioPipe.reset();
 		m_lastStats.lastError = StreamingError::InternalError;

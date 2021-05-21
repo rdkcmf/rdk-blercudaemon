@@ -915,7 +915,7 @@ void GattUpgradeService::sendDATA()
 	} packet;
 
 	// fire off a bunch of DATA packets for the next window
-	for (uint i = 0; i < m_windowSize; i++) {
+	for (int i = 0; i < m_windowSize; i++) {
 
 		// read up to 18 bytes of data
 		qint64 rd = m_fwFile->read(packet.body, FIRMWARE_PACKET_MTU);

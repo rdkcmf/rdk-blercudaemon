@@ -44,7 +44,7 @@ public:
 	          const QString &serviceName,
 	          const QString &configJson,
 	          QObject *parent = nullptr);
-	virtual ~ASService();
+	~ASService() override;
 
 protected:
 	virtual void onRequest(const ASRequest &request);

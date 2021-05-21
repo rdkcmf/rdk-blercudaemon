@@ -133,7 +133,7 @@ private:
 
 	int m_progress;
 
-	uint m_windowSize;
+	int m_windowSize;
 
 	QSharedPointer<FwImageFile> m_fwFile;
 

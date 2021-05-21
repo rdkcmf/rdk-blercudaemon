@@ -42,7 +42,7 @@ class BleRcuDevice;
 
 
 
-class BleRcuControllerImpl : public BleRcuController
+class BleRcuControllerImpl final : public BleRcuController
 {
 	Q_OBJECT
 

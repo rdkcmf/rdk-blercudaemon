@@ -23,22 +23,21 @@
 //
 
 #include "blercudebug1_adaptor.h"
+#include "blercu/blercucontroller.h"
 #include "utils/logging.h"
 
 #include <QCoreApplication>
 
 
 
-BleRcuDebug1Adaptor::BleRcuDebug1Adaptor(QObject *parent)
+BleRcuDebug1Adaptor::BleRcuDebug1Adaptor(QObject *parent,
+                                         const QSharedPointer<BleRcuController> &controller)
 	: DBusAbstractAdaptor(parent)
+	, m_controller(controller)
 {
 	// don't auto relay signals, we don't have any signals
 	setAutoRelaySignals(false);
 
-}
-
-BleRcuDebug1Adaptor::~BleRcuDebug1Adaptor()
-{
 }
 
 // -----------------------------------------------------------------------------

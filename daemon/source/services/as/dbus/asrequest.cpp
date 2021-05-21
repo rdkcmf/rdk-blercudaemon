@@ -184,9 +184,9 @@ ASRequestPrivate::ASRequestPrivate(uint requestFlags,
     : m_sentReply(false)
     , m_method(methodFromFlags(requestFlags))
     , m_path(requestUrl)
-    , m_queryParams(requestQueryParams)
     , m_body(requestBody)
     , m_headers(convertHeaderMap(requestHeaders))
+	, m_queryParams(requestQueryParams)
     , m_reply(message.createReply())
 {
 }
@@ -247,4 +247,6 @@ bool ASRequestPrivate::sendReply(uint code,
 
     // send off the reply
     m_sentReply = QDBusConnection::systemBus().send(m_reply);
+
+    return true;
 }

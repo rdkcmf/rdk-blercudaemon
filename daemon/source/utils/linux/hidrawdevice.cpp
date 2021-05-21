@@ -22,7 +22,6 @@
 //  SkyBluetoothRcu
 //
 
-#include <sys/sysmacros.h>
 #include "hidrawdevice.h"
 #include "hidrawdevice_p.h"
 #include "logging.h"

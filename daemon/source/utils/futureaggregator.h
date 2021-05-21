@@ -38,11 +38,11 @@ class FutureAggregator : public QObject
 	Q_OBJECT
 
 public:
-	FutureAggregator(const QList< Future<> > &futures,
+	explicit FutureAggregator(const QList< Future<> > &futures,
 	                 QObject *parent = nullptr);
-	FutureAggregator(const QList< Future<> > &&futures,
+	explicit FutureAggregator(const QList< Future<> > &&futures,
 	                 QObject *parent = nullptr);
-	~FutureAggregator();
+	~FutureAggregator() override;
 
 public:
 	bool isEmpty() const;

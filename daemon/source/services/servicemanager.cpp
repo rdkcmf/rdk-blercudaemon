@@ -64,6 +64,8 @@ bool ServiceManager::registerAllServices()
 #endif
 	}
 #endif // defined(Q_OS_LINUX)
+
+	return true;
 }
 
 void ServiceManager::unregisterAllServices()

@@ -78,7 +78,7 @@ public:
 	inline Future<SearchResults> brands(const QString &search,
 	                                    SearchOptions options = NoOptions) const
 	{
-		this->brands(search, options, -1, -1);
+		return this->brands(search, options, -1, -1);
 	}
 	virtual Future<SearchResults> brands(const QString &search,
 	                                     SearchOptions options,
@@ -89,7 +89,7 @@ public:
 	                                    const QString &search,
 	                                    SearchOptions options = NoOptions) const
 	{
-		this->models(brand, search, options, -1, -1);
+		return this->models(brand, search, options, -1, -1);
 	}
 	virtual Future<SearchResults> models(const QString &brand,
 	                                     const QString &search,

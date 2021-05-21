@@ -46,12 +46,12 @@ class InputDeviceInfo;
 class InputDeviceManager;
 
 
-class BleRcuStatusWebSocket : public QObject
+class BleRcuStatusWebSocket final : public QObject
 {
 	Q_OBJECT
 
 public:
-	explicit BleRcuStatusWebSocket(QObject *parent = nullptr);
+	explicit BleRcuStatusWebSocket(int asVersion, QObject *parent = nullptr);
 	~BleRcuStatusWebSocket() final;
 
 public:
@@ -96,6 +96,8 @@ private:
 	QString controllerStateString(BleRcuController::State state) const;
 
 private:
+	const int m_asVersion;
+
 	QSharedPointer<InputDeviceManager> m_inputDeviceManager;
 
 	QSharedPointer<BleRcuController> m_controller;
