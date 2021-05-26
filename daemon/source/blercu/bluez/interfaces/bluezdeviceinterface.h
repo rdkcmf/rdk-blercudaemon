@@ -178,6 +178,12 @@ public slots:
 		return asyncCallWithArgumentList(QStringLiteral("Disconnect"), argumentList);
 	}
 
+	inline QDBusMessage DisconnectSync()
+	{
+		QList<QVariant> argumentList;
+		return callWithArgumentList(QDBus::Block, QStringLiteral("Disconnect"), argumentList);
+	}
+
 	inline QDBusPendingReply<> DisconnectProfile(const QString &UUID)
 	{
 		QList<QVariant> argumentList;

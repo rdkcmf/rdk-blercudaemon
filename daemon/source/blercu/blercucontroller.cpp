@@ -227,6 +227,28 @@ void BleRcuControllerImpl::dump(Dumper out) const
 
 // -----------------------------------------------------------------------------
 /*!
+	\fn void BleRcuControllerImpl::disconnectAllDevices() const
+
+	Disconnect from all managed devices.  This is needed during shutdown to fix
+	an intermittent bluez crash if a device is trying to send notifications to bluez
+	while the system is shutting down.
+
+ */
+void BleRcuControllerImpl::disconnectAllDevices() const
+{
+	for (const BleAddress &bdaddr : m_managedDevices) {
+		qMilestone() << "Disconnecting from " << bdaddr.toString();
+		const QSharedPointer<BleRcuDevice> device = m_adapter->getDevice(bdaddr);
+		if (!device || !device->isValid()) {
+			qWarning() << "Invalid device " << bdaddr.toString() << ", ignoring...";
+		} else {
+			device->shutdown();
+		}
+	}
+}
+
+// -----------------------------------------------------------------------------
+/*!
 	\fn BleRcuError BleRcuController::lastError() const
 
 	Returns the last error that occured when performing a pairing function.

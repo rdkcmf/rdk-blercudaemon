@@ -69,6 +69,7 @@ public:
 	virtual bool isReady() const = 0;
 
 	virtual qint64 msecsSinceReady() const = 0;
+	virtual void shutdown() = 0;
 
 	virtual BleAddress address() const = 0;
 	virtual QString name() const = 0;

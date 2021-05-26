@@ -52,11 +52,7 @@ GattBatteryService::GattBatteryService()
 
 GattBatteryService::~GattBatteryService()
 {
-	//
 	stop();
-
-	//
-	m_battLevelCharacteristic.reset();
 }
 
 // -----------------------------------------------------------------------------

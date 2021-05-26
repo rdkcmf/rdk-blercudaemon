@@ -609,6 +609,19 @@ void BleRcuDeviceBluez::onEnteredResolvingServicesState()
 	}
 }
 
+void BleRcuDeviceBluez::shutdown()
+{
+	if (m_stateMachine.isRunning()) {
+		m_stateMachine.stop();
+	}
+	if (m_services) {
+		m_services->stop();
+		m_services.clear();
+	}
+
+	qInfo() << "making a blocking synchronous call to disconnect device...";
+	QDBusMessage reply = m_deviceProxy->DisconnectSync();
+}
 // -----------------------------------------------------------------------------
 /*!
 	\internal

@@ -104,6 +104,7 @@ public:
 	bool isReady() const override;
 
 	qint64 msecsSinceReady() const override;
+	void shutdown() override;
 
 //	Future<qint16> rssi() const override;
 

@@ -50,13 +50,7 @@ GattRemoteControlService::GattRemoteControlService()
 
 GattRemoteControlService::~GattRemoteControlService()
 {
-	//
 	stop();
-
-	//
-	m_unpairReasonCharacteristic.reset();
-	m_rebootReasonCharacteristic.reset();
-	m_rcuActionCharacteristic.reset();
 }
 
 // -----------------------------------------------------------------------------

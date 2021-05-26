@@ -84,6 +84,7 @@ public:
 	virtual QSharedPointer<BleRcuDevice> managedDevice(const BleAddress &address) const = 0;
 
 	virtual bool unpairDevice(const BleAddress &address) const = 0;
+	virtual void disconnectAllDevices() const = 0;
 
 signals:
 	void managedDeviceAdded(BleAddress address);

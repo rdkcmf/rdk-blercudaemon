@@ -76,6 +76,7 @@ public:
 	QSharedPointer<BleRcuDevice> managedDevice(const BleAddress &address) const override;
 
 	bool unpairDevice(const BleAddress &address) const override;
+	void disconnectAllDevices() const override;
 
 private:
 	void syncManagedDevices();

@@ -411,6 +411,10 @@ int main(int argc, char *argv[])
 
 	// finally start the Qt event loop
 	int exitCode = QCoreApplication::exec();
+	
+	qMilestone("Cancelling pairing and scanning state machines...");
+	controller->cancelPairing();
+	controller->cancelScanning();
 
 	qMilestone("Checking if bluez adapter is trying to discover...");
 	if (adapter->isDiscovering()) {
@@ -422,6 +426,9 @@ int main(int argc, char *argv[])
 		qMilestone("Disabling bluez adapter pairability");
 		adapter->disablePairable();
 	}
+
+	qMilestone("Disconnecting from all devices...");
+	controller->disconnectAllDevices();
 
 	qMilestone("BleRcuDaemon shutting down");
 
