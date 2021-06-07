@@ -42,8 +42,13 @@ namespace
 	unsigned char getNumberOfAdapters() noexcept
 	{
 		unsigned char result{};
-		LOG_IF_FAILED(BTRMGR_GetNumberOfAdapters, &result);
-		return result;
+		auto ret = BTRMGR_GetNumberOfAdapters(&result);
+		if(ret != BTRMGR_RESULT_SUCCESS) {
+			qError("call to BTRMGR_GetNumberOfAdapters failed with result %d, returning 0 adapters...", ret);
+			return 0;
+		} else {
+			return result;
+		}
 	}
 
 	struct DiscoveryState
@@ -74,24 +79,38 @@ BtrMgrAdapter::ApiInitializer::~ApiInitializer() noexcept
 
 BtrMgrAdapter::BtrMgrAdapter() noexcept
 {
+	SetAdapterIndex();
+}
+
+void BtrMgrAdapter::SetAdapterIndex() noexcept
+{
 	const auto numOfAdapters = getNumberOfAdapters();
 	adapterIdx = numOfAdapters-1;
 }
 
-void BtrMgrAdapter::startDiscovery(BtrMgrAdapter::OperationType requestedOperationType) const noexcept
+void BtrMgrAdapter::startDiscovery(BtrMgrAdapter::OperationType requestedOperationType) noexcept
 {
+	if (adapterIdx == 0xFF) {
+		SetAdapterIndex();
+	}
 	LOG_IF_FAILED(BTRMGR_StartDeviceDiscovery, adapterIdx, requestedOperationType);
 }
 
-BtrMgrAdapter::OperationType BtrMgrAdapter::stopDiscovery() const noexcept
+BtrMgrAdapter::OperationType BtrMgrAdapter::stopDiscovery() noexcept
 {
+	if (adapterIdx == 0xFF) {
+		SetAdapterIndex();
+	}
 	const auto state = getDiscoveryState(adapterIdx);
 
 	LOG_IF_FAILED(BTRMGR_StopDeviceDiscovery, adapterIdx, state.operationType);
 	return state.operationType;
 }
 
-bool BtrMgrAdapter::isDiscoveryInProgress() const noexcept
+bool BtrMgrAdapter::isDiscoveryInProgress() noexcept
 {
+	if (adapterIdx == 0xFF) {
+		SetAdapterIndex();
+	}
 	return getDiscoveryState(adapterIdx).status  == BTRMGR_DISCOVERY_STATUS_IN_PROGRESS;
 }

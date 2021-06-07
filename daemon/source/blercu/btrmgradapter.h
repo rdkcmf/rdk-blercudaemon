@@ -43,9 +43,10 @@ public:
 
 	BtrMgrAdapter() noexcept;
 
-	void startDiscovery(OperationType requestedOperationType) const noexcept;
-	OperationType stopDiscovery() const noexcept;
-	bool isDiscoveryInProgress() const noexcept;
+	void SetAdapterIndex() noexcept;
+	void startDiscovery(OperationType requestedOperationType) noexcept;
+	OperationType stopDiscovery() noexcept;
+	bool isDiscoveryInProgress() noexcept;
 
 private:
 	unsigned char adapterIdx{};
