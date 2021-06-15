@@ -52,7 +52,7 @@ const BleUuid GattInfraredService::m_serviceUuid(BleUuid::SkyQInfrared);
 	Constructs the infrared GATT service.
 
  */
-GattInfraredService::GattInfraredService(const QSharedPointer<const IrDatabase> &irDatabase)
+GattInfraredService::GattInfraredService(const QSharedPointer<const IrDatabase> &irDatabase, const ConfigModelSettings &settings)
 	: BleRcuInfraredService(nullptr)
 	, m_irDatabase(irDatabase)
 	, m_irStandbyMode(StandbyModeB)
@@ -65,7 +65,7 @@ GattInfraredService::GattInfraredService(const QSharedPointer<const IrDatabase> 
 	QRegExp regex("ES*160", Qt::CaseInsensitive, QRegExp::Wildcard);
 
 	const QByteArray stbModel = qgetenv("ETHAN_STB_MODEL");
-	if (!stbModel.isEmpty() && regex.exactMatch(stbModel))
+	if ((!stbModel.isEmpty() && regex.exactMatch(stbModel)) || settings.standbyMode() == "C")
 		m_irStandbyMode = StandbyModeC;
 	else
 		m_irStandbyMode = StandbyModeB;

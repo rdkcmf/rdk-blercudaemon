@@ -50,6 +50,7 @@ ConfigModelSettingsData::ConfigModelSettingsData(const ConfigModelSettingsData &
 	, m_disabled(other.m_disabled)
 	, m_pairingNameFormat(other.m_pairingNameFormat)
 	, m_filterBytes(other.m_filterBytes)
+	, m_standbyMode(other.m_standbyMode)
 	, m_hasConnParams(other.m_hasConnParams)
 	, m_connParams(other.m_connParams)
 	, m_servicesType(other.m_servicesType)
@@ -234,6 +235,17 @@ ConfigModelSettingsData::ConfigModelSettingsData(const QJsonObject &json)
 				qWarning("invalid entry in 'filterBytes' array");
 			else
 				m_filterBytes.insert(static_cast<quint8>(filterByte.toInt()));
+		}
+	}
+
+	// standbyMode field
+	{
+		const QJsonValue standbyMode = json["standbyMode"];
+		if (!standbyMode.isString()) {
+			qWarning("invalid 'standbyMode' field");
+			m_standbyMode = "";
+		} else {
+			m_standbyMode = standbyMode.toString();
 		}
 	}
 
@@ -476,6 +488,15 @@ QRegExp ConfigModelSettings::scanNameMatcher() const
 QSet<quint8> ConfigModelSettings::irFilterBytes() const
 {
 	return d->m_filterBytes;
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	The standby mode used in the IR service.
+ */
+QString ConfigModelSettings::standbyMode() const
+{
+	return d->m_standbyMode;
 }
 
 // -----------------------------------------------------------------------------

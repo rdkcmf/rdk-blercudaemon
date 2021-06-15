@@ -63,6 +63,8 @@ public:
 
 	QSet<quint8> irFilterBytes() const;
 
+	QString standbyMode() const;
+
 public:
 	enum ServicesType {
 		DBusServiceType,

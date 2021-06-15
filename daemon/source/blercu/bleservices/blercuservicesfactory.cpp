@@ -87,7 +87,7 @@ QSharedPointer<BleRcuServices> BleRcuServicesFactory::createServices(const BleAd
 	switch (settings.servicesType()) {
 
 		case ConfigModelSettings::GattServiceType:
-			return QSharedPointer<GattServices>::create(address, gattProfile, m_irDatabase);
+			return QSharedPointer<GattServices>::create(address, gattProfile, m_irDatabase, settings);
 
 		default:
 			qError("service interface not supported");

@@ -28,6 +28,7 @@
 #include "blercu/bleservices/blercuservices.h"
 #include "utils/bleaddress.h"
 #include "utils/statemachine.h"
+#include "configsettings/configsettings.h"
 
 
 class BleGattProfile;
@@ -53,6 +54,7 @@ public:
 	GattServices(const BleAddress &address,
 	             const QSharedPointer<BleGattProfile> &gattProfile,
 	             const QSharedPointer<const IrDatabase> &irDatabase,
+	             const ConfigModelSettings &settings,
 	             QObject *parent = nullptr);
 	~GattServices() final;
 

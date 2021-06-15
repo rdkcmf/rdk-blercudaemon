@@ -118,6 +118,7 @@
 			"pairingNameFormat": "Platco PR1",
 			"scanNameFormat": "Platco PR1",
 			"filterBytes": [ 19, 21 ],
+			"standbyMode": "C",
 			"services": {
 				"type": "gatt",
 				"supported": [

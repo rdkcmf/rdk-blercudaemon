@@ -30,6 +30,7 @@
 #include "utils/bleuuid.h"
 #include "utils/statemachine.h"
 #include "utils/futureaggregator.h"
+#include "configsettings/configsettings.h"
 
 #include <QMap>
 #include <QEvent>
@@ -50,7 +51,7 @@ class GattInfraredService : public BleRcuInfraredService
 	Q_OBJECT
 
 public:
-	explicit GattInfraredService(const QSharedPointer<const IrDatabase> &irDatabase);
+	explicit GattInfraredService(const QSharedPointer<const IrDatabase> &irDatabase, const ConfigModelSettings &settings);
 	~GattInfraredService() final;
 
 public:

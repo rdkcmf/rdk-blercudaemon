@@ -55,6 +55,7 @@ public:
 	QByteArray m_pairingNameFormat;
 	QRegExp m_scanNameMatcher;
 	QSet<quint8> m_filterBytes;
+	QString m_standbyMode;
 
 	bool m_hasConnParams;
 	BleConnectionParameters m_connParams;

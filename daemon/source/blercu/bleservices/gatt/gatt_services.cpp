@@ -51,6 +51,7 @@
 GattServices::GattServices(const BleAddress &address,
                            const QSharedPointer<BleGattProfile> &gattProfile,
                            const QSharedPointer<const IrDatabase> &irDatabase,
+                           const ConfigModelSettings &settings,
                            QObject *parent)
 	: BleRcuServices(parent)
 	, m_address(address)
@@ -60,7 +61,7 @@ GattServices::GattServices(const BleAddress &address,
 	, m_deviceInfoService(QSharedPointer<GattDeviceInfoService>::create())
 	, m_batteryService(QSharedPointer<GattBatteryService>::create())
 	, m_findMeService(QSharedPointer<GattFindMeService>::create())
-	, m_infraredService(QSharedPointer<GattInfraredService>::create(irDatabase))
+	, m_infraredService(QSharedPointer<GattInfraredService>::create(irDatabase, settings))
 	, m_touchService(QSharedPointer<GattTouchService>::create())
 	, m_upgradeService(QSharedPointer<GattUpgradeService>::create())
 	, m_remoteControlService(QSharedPointer<GattRemoteControlService>::create())
