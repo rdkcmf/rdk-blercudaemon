@@ -99,6 +99,7 @@ public:
 		UnpairReason = 0xed01,
 		RebootReason = 0xed02,
 		RcuAction = 0xed03,
+		LastKeypress = 0xed04,
 	};
 
 	enum DescriptorType {

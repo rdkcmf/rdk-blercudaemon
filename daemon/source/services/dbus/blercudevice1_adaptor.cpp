@@ -152,6 +152,8 @@ BleRcuDevice1Adaptor::BleRcuDevice1Adaptor(const QSharedPointer<BleRcuDevice> &d
 	                 this, &BleRcuDevice1Adaptor::onUnpairReasonChanged);
 	QObject::connect(remoteControlService.data(), &BleRcuRemoteControlService::rebootReasonChanged,
 	                 this, &BleRcuDevice1Adaptor::onRebootReasonChanged);
+	QObject::connect(remoteControlService.data(), &BleRcuRemoteControlService::lastKeypressChanged,
+	                 this, &BleRcuDevice1Adaptor::onLastKeypressChanged);
 }
 
 BleRcuDevice1Adaptor::~BleRcuDevice1Adaptor()
@@ -997,6 +999,16 @@ quint8 BleRcuDevice1Adaptor::rebootReason() const
 	const QSharedPointer<const BleRcuRemoteControlService> service = m_device->remoteControlService();
 	return service->rebootReason();
 }
+// -----------------------------------------------------------------------------
+/*!
+	DBus get property call for com.sky.BleRcuDevice1.LastKeypress
+
+ */
+quint8 BleRcuDevice1Adaptor::lastKeypress() const
+{
+	const QSharedPointer<const BleRcuRemoteControlService> service = m_device->remoteControlService();
+	return service->lastKeypress();
+}
 
 // -----------------------------------------------------------------------------
 /*!
@@ -1014,4 +1026,9 @@ void BleRcuDevice1Adaptor::onUnpairReasonChanged(quint8 reason)
 void BleRcuDevice1Adaptor::onRebootReasonChanged(quint8 reason)
 {
 	emitPropertyChanged<quint8>(QStringLiteral("RebootReason"), reason);
+}
+
+void BleRcuDevice1Adaptor::onLastKeypressChanged(quint8 key)
+{
+	emitPropertyChanged<quint8>(QStringLiteral("LastKeypress"), key);
 }

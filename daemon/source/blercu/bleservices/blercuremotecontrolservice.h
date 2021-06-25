@@ -44,11 +44,13 @@ public:
 public:
 	virtual quint8 unpairReason() const = 0;
 	virtual quint8 rebootReason() const = 0;
+	virtual quint8 lastKeypress() const = 0;
 	virtual Future<> sendRcuAction(quint8 action) = 0;
 
 signals:
 	void unpairReasonChanged(quint8 reason);
 	void rebootReasonChanged(quint8 reason);
+	void lastKeypressChanged(quint8 key);
 };
 
 #endif // !defined(BLERCUREMOTECONTROLSERVICE_H)

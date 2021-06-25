@@ -128,8 +128,10 @@ void GattServices::init()
 	m_stateMachine.addTransition(IdleState,                         StartServicesRequestEvent,      GettingGattServicesState);
 
 	m_stateMachine.addTransition(GettingGattServicesState,          StopServicesRequestEvent,       IdleState);
-	m_stateMachine.addTransition(GettingGattServicesState,          GotGattServicesEvent,           StartingDeviceInfoServiceState);
+	m_stateMachine.addTransition(GettingGattServicesState,          GotGattServicesEvent,           StartingRemoteControlServiceState);
 
+	// Need to start RemoteControl service first so that we read the last keypress characterisitic as soon as possible
+	m_stateMachine.addTransition(StartingRemoteControlServiceState, RemoteControlServiceReadyEvent, StartingDeviceInfoServiceState);
 	m_stateMachine.addTransition(StartingDeviceInfoServiceState,    DeviceInfoServiceReadyEvent,    StartingBatteryServiceState);
 	m_stateMachine.addTransition(StartingBatteryServiceState,       BatteryServiceReadyEvent,       StartingFindMeServiceState);
 	m_stateMachine.addTransition(StartingFindMeServiceState,        FindMeServiceReadyEvent,        StartingAudioServiceState);
@@ -137,8 +139,7 @@ void GattServices::init()
 	m_stateMachine.addTransition(StartingInfraredServiceState,      InfraredServiceReadyEvent,      StartingUpgradeServiceState);
 //	m_stateMachine.addTransition(StartingInfraredServiceState,      InfraredServiceReadyEvent,      StartingTouchServiceState);
 //	m_stateMachine.addTransition(StartingTouchServiceState,         TouchServiceReadyEvent,         StartingUpgradeServiceState);
-	m_stateMachine.addTransition(StartingUpgradeServiceState,       UpgradeServiceReadyEvent,       StartingRemoteControlServiceState);
-	m_stateMachine.addTransition(StartingRemoteControlServiceState, RemoteControlServiceReadyEvent, ReadyState);
+	m_stateMachine.addTransition(StartingUpgradeServiceState,       UpgradeServiceReadyEvent,       ReadyState);
 
 	m_stateMachine.addTransition(ResolvedServicesSuperState,        StopServicesRequestEvent,       StoppingState);
 	m_stateMachine.addTransition(StoppingState,                     ServicesStoppedEvent,           IdleState);

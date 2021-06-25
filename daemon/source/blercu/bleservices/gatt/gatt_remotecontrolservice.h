@@ -54,6 +54,7 @@ public:
 
 	quint8 unpairReason() const override;
 	quint8 rebootReason() const override;
+	quint8 lastKeypress() const override;
 	Future<> sendRcuAction(quint8 action) override;
 
 public:
@@ -66,6 +67,7 @@ signals:
 private:
 	enum State {
 		IdleState,
+		StartReadLastKeypressState,
 		StartUnpairNotifyState,
 		StartRebootNotifyState,
 		StartingState,
@@ -84,6 +86,7 @@ private:
 	void requestStartRebootNotify();
 	void requestUnpairReason();
 	void requestRebootReason();
+	void requestLastKeypress();
 	
 	void onRcuActionReply();
 	void onRcuActionError(const QString &errorName, const QString &errorMessage);
@@ -92,12 +95,14 @@ private:
 	QSharedPointer<BleGattCharacteristic> m_unpairReasonCharacteristic;
 	QSharedPointer<BleGattCharacteristic> m_rebootReasonCharacteristic;
 	QSharedPointer<BleGattCharacteristic> m_rcuActionCharacteristic;
+	QSharedPointer<BleGattCharacteristic> m_lastKeypressCharacteristic;
 
 	StateMachine m_stateMachine;
 
 	quint8 m_unpairReason;
 	quint8 m_rebootReason;
 	quint8 m_rcuAction;
+	quint8 m_lastKeypress;
 
 	QSharedPointer< Promise<> > m_promiseResults;
 
@@ -106,6 +111,7 @@ private:
 	static const BleUuid m_unpairReasonCharUuid;
 	static const BleUuid m_rebootReasonCharUuid;
 	static const BleUuid m_rcuActionCharUuid;
+	static const BleUuid m_lastKeypressCharUuid;
 
 private:
 	static const QEvent::Type StartServiceRequestEvent = QEvent::Type(QEvent::User + 1);

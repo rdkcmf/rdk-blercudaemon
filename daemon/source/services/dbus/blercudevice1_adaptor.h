@@ -114,6 +114,9 @@ class BleRcuDevice1Adaptor : public DBusAbstractAdaptor
 	            "    <property access=\"read\" type=\"y\" name=\"RebootReason\">\n"
 	            "      <annotation value=\"const\" name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\"/>\n"
 	            "    </property>\n"
+	            "    <property access=\"read\" type=\"y\" name=\"LastKeypress\">\n"
+	            "      <annotation value=\"const\" name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\"/>\n"
+	            "    </property>\n"
 	            "    <method name=\"SendRcuAction\">\n"
 	            "      <arg direction=\"in\" type=\"y\" name=\"action\"/>\n"
 	            "    </method>\n"
@@ -173,6 +176,7 @@ public:
 	Q_PROPERTY(bool TouchModeSettable READ touchModeSettable)
 	Q_PROPERTY(quint8 UnpairReason READ unpairReason)
 	Q_PROPERTY(quint8 RebootReason READ rebootReason)
+	Q_PROPERTY(quint8 LastKeypress READ lastKeypress)
 
 public:
 	BleRcuDevice1Adaptor(const QSharedPointer<BleRcuDevice> &device,
@@ -210,6 +214,7 @@ public:
 
 	quint8 unpairReason() const;
 	quint8 rebootReason() const;
+	quint8 lastKeypress() const;
 
 public slots:
 	void ProgramIrSignals(qint32 codeId, const CdiKeyCodeList &keyCode,
@@ -257,6 +262,7 @@ private:
 
 	void onUnpairReasonChanged(quint8 unpairReason);
 	void onRebootReasonChanged(quint8 rebootReason);
+	void onLastKeypressChanged(quint8 lastKeypress);
 
 	Qt::Key convertCDIKeyCode(quint16 cdiKeyCode) const;
 

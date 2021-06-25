@@ -36,6 +36,7 @@ const BleUuid GattRemoteControlService::m_serviceUuid(BleUuid::ComcastRemoteCont
 const BleUuid GattRemoteControlService::m_unpairReasonCharUuid(BleUuid::UnpairReason);
 const BleUuid GattRemoteControlService::m_rebootReasonCharUuid(BleUuid::RebootReason);
 const BleUuid GattRemoteControlService::m_rcuActionCharUuid(BleUuid::RcuAction);
+const BleUuid GattRemoteControlService::m_lastKeypressCharUuid(BleUuid::LastKeypress);
 
 
 GattRemoteControlService::GattRemoteControlService()
@@ -43,6 +44,7 @@ GattRemoteControlService::GattRemoteControlService()
 	, m_unpairReason(0xFF)
 	, m_rebootReason(0xFF)
 	, m_rcuAction(0xFF)
+	, m_lastKeypress(0xFF)
 {
 	// create the basic statemachine
 	init();
@@ -75,27 +77,33 @@ void GattRemoteControlService::init()
 
 	// add all the states and the super state groupings
 	m_stateMachine.addState(IdleState, QStringLiteral("Idle"));
+	m_stateMachine.addState(StartReadLastKeypressState, QStringLiteral("StartReadLastKeypress"));
 	m_stateMachine.addState(StartUnpairNotifyState, QStringLiteral("StartUnpairNotify"));
 	m_stateMachine.addState(StartRebootNotifyState, QStringLiteral("StartRebootNotify"));
 	m_stateMachine.addState(StartingState, QStringLiteral("Starting"));
 	m_stateMachine.addState(RunningState, QStringLiteral("Running"));
 
 
-	// add the transitions:      From State              -> Event                   ->  To State
-	m_stateMachine.addTransition(IdleState,              StartServiceRequestEvent,   StartUnpairNotifyState);
+	// add the transitions:      From State                    -> Event                    ->  To State
+	m_stateMachine.addTransition(IdleState,                    StartServiceRequestEvent,   StartReadLastKeypressState);
 
-	m_stateMachine.addTransition(StartUnpairNotifyState, RetryStartNotifyEvent,      StartUnpairNotifyState);
-	m_stateMachine.addTransition(StartUnpairNotifyState, StopServiceRequestEvent,    IdleState);
-	m_stateMachine.addTransition(StartUnpairNotifyState, StartedNotifingEvent,       StartRebootNotifyState);
+	// Need to read last keypress characteristic first so we can notify its initial value at the earliest possible time.
+	m_stateMachine.addTransition(StartReadLastKeypressState,   RetryStartNotifyEvent,      StartReadLastKeypressState);
+	m_stateMachine.addTransition(StartReadLastKeypressState,   StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(StartReadLastKeypressState,   StartedNotifingEvent,       StartUnpairNotifyState);
 
-	m_stateMachine.addTransition(StartRebootNotifyState, RetryStartNotifyEvent,      StartRebootNotifyState);
-	m_stateMachine.addTransition(StartRebootNotifyState, StopServiceRequestEvent,    IdleState);
-	m_stateMachine.addTransition(StartRebootNotifyState, StartedNotifingEvent,       StartingState);
+	m_stateMachine.addTransition(StartUnpairNotifyState,       RetryStartNotifyEvent,      StartUnpairNotifyState);
+	m_stateMachine.addTransition(StartUnpairNotifyState,       StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(StartUnpairNotifyState,       StartedNotifingEvent,       StartRebootNotifyState);
 
-	m_stateMachine.addTransition(StartingState,    ServiceReadyEvent,          RunningState);
-	m_stateMachine.addTransition(StartingState,    StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(StartRebootNotifyState,       RetryStartNotifyEvent,      StartRebootNotifyState);
+	m_stateMachine.addTransition(StartRebootNotifyState,       StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(StartRebootNotifyState,       StartedNotifingEvent,       StartingState);
 
-	m_stateMachine.addTransition(RunningState,     StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(StartingState,                ServiceReadyEvent,          RunningState);
+	m_stateMachine.addTransition(StartingState,                StopServiceRequestEvent,    IdleState);
+
+	m_stateMachine.addTransition(RunningState,                 StopServiceRequestEvent,    IdleState);
 
 
 	// connect to the state entry signal
@@ -127,7 +135,14 @@ bool GattRemoteControlService::start(const QSharedPointer<const BleGattService> 
 		qWarning("invalid remote control gatt service info");
 		return false;
 	}
-
+	// create the bluez dbus proxy to the characteristic
+	if (!m_lastKeypressCharacteristic || !m_lastKeypressCharacteristic->isValid()) {
+		// get the chararacteristic
+		m_lastKeypressCharacteristic = gattService->characteristic(m_lastKeypressCharUuid);
+		if (!m_lastKeypressCharacteristic || !m_lastKeypressCharacteristic->isValid()) {
+			qWarning("Failed to get last keypress characteristic, check that remote firmware supports this feature.  Continuing anyway...");
+		}
+	}
 	// create the bluez dbus proxy to the characteristic
 	if (!m_unpairReasonCharacteristic || !m_unpairReasonCharacteristic->isValid()) {
 		// get the chararacteristic
@@ -193,9 +208,16 @@ void GattRemoteControlService::stop()
 void GattRemoteControlService::onEnteredState(int state)
 {
 	if (state == IdleState) {
+		m_lastKeypressCharacteristic.reset();
 		m_unpairReasonCharacteristic.reset();
 		m_rebootReasonCharacteristic.reset();
 		m_rcuActionCharacteristic.reset();
+
+	} else if (state == StartReadLastKeypressState) {
+		requestLastKeypress();
+		// Due to backwards compatibility with existing remote firmwares, this characteristic may not be present.
+		// So don't retry on failure here, just continue with the state machine.
+		m_stateMachine.postEvent(StartedNotifingEvent);
 
 	} else if (state == StartUnpairNotifyState) {
 		requestStartUnpairNotify();
@@ -231,7 +253,7 @@ void GattRemoteControlService::requestStartUnpairNotify()
 		{
 			// this is bad if this happens as we won't get updates, so we install a timer to 
 			// retry enabling notifications in a couple of seconds time
-			qError() << "failed to enable unpair or reboot notifications due to"
+			qError() << "failed to enable unpair reason characteristic notifications due to"
 			         << errorName << errorMessage;
 
 			m_stateMachine.postDelayedEvent(RetryStartNotifyEvent, 2000);
@@ -269,7 +291,7 @@ void GattRemoteControlService::requestStartRebootNotify()
 		{
 			// this is bad if this happens as we won't get updates, so we install a timer to 
 			// retry enabling notifications in a couple of seconds time
-			qError() << "failed to enable unpair or reboot notifications due to"
+			qError() << "failed to enable reboot reason characteristic notifications due to"
 			         << errorName << errorMessage;
 
 			m_stateMachine.postDelayedEvent(RetryStartNotifyEvent, 2000);
@@ -401,7 +423,7 @@ void GattRemoteControlService::onRcuActionReply()
  */
 void GattRemoteControlService::requestUnpairReason()
 {
-	// lambda called if an error occurs enabling the notifications
+	// lambda called if an error occurs reading the characteristic
 	const std::function<void(const QString&, const QString&)> errorCallback =
 		[this](const QString &errorName, const QString &errorMessage)
 		{
@@ -409,7 +431,7 @@ void GattRemoteControlService::requestUnpairReason()
 			         << errorName << errorMessage;
 		};
 
-	// lamda called if notifications are successifully enabled
+	// lambda called after successfully reading the characteristic
 	const std::function<void(const QByteArray &value)> successCallback =
 		[this](const QByteArray &value)
 		{
@@ -443,7 +465,7 @@ void GattRemoteControlService::requestUnpairReason()
  */
 void GattRemoteControlService::requestRebootReason()
 {
-	// lambda called if an error occurs enabling the notifications
+	// lambda called if an error occurs reading the characteristic
 	const std::function<void(const QString&, const QString&)> errorCallback =
 		[this](const QString &errorName, const QString &errorMessage)
 		{
@@ -451,7 +473,7 @@ void GattRemoteControlService::requestRebootReason()
 			         << errorName << errorMessage;
 		};
 
-	// lamda called if notifications are successifully enabled
+	// lambda called after successfully reading the characteristic
 	const std::function<void(const QByteArray &value)> successCallback =
 		[this](const QByteArray &value)
 		{
@@ -475,7 +497,51 @@ void GattRemoteControlService::requestRebootReason()
 	result.connectErrored(this, errorCallback);
 	result.connectFinished(this, successCallback);
 }
+// -----------------------------------------------------------------------------
+/*!
+	\internal
 
+	Sends a request to org.bluez.GattCharacteristic1.Value() to get the value
+	propery of the characteristic which contains the last key press.
+
+ */
+void GattRemoteControlService::requestLastKeypress()
+{
+	// lambda called if an error occurs reading the characteristic
+	const std::function<void(const QString&, const QString&)> errorCallback =
+		[this](const QString &errorName, const QString &errorMessage)
+		{
+			qError() << "Failed to read last key press due to"
+			         << errorName << errorMessage;
+		};
+
+	// lambda called after successfully reading the characteristic
+	const std::function<void(const QByteArray &value)> successCallback =
+		[this](const QByteArray &value)
+		{
+			m_lastKeypress = static_cast<quint8>(value.at(0));
+			qInfo().nospace() << "Successfully read last key press characteristic, value = <0x" << hex << m_lastKeypress << ">, emitting signal...";
+			emit lastKeypressChanged(m_lastKeypress);
+		};
+
+	if (m_lastKeypressCharacteristic && m_lastKeypressCharacteristic->isValid()) {
+		// send a request to the bluez daemon to read the characteristic
+		Future<QByteArray> result = m_lastKeypressCharacteristic->readValue();
+		if (!result.isValid() || result.isError()) {
+			errorCallback(result.errorName(), result.errorMessage());
+			return;
+		} else if (result.isFinished()) {
+			successCallback(result.result());
+			return;
+		}
+
+		// connect functors to the future async completion
+		result.connectErrored(this, errorCallback);
+		result.connectFinished(this, successCallback);
+	} else {
+		qError() << "m_lastKeypressCharacteristic is not valid, check that the remote firmware version supports this feature.";
+	}
+}
 // -----------------------------------------------------------------------------
 /*!
 	\internal
@@ -532,4 +598,13 @@ quint8 GattRemoteControlService::unpairReason() const
 quint8 GattRemoteControlService::rebootReason() const
 {
 	return m_rebootReason;
+}
+// -----------------------------------------------------------------------------
+/*!
+	\overload
+
+ */
+quint8 GattRemoteControlService::lastKeypress() const
+{
+	return m_lastKeypress;
 }

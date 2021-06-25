@@ -291,6 +291,7 @@ QString BleUuid::longName() const
 			case UnpairReason:              return QStringLiteral("com.sky.characteristic.unpair_reason");
 			case RebootReason:              return QStringLiteral("com.sky.characteristic.reboot_reason");
 			case RcuAction:                 return QStringLiteral("com.sky.characteristic.rcu_action");
+			case LastKeypress:              return QStringLiteral("com.sky.characteristic.last_keypress");
 
 			case InfraredSignalReference:   return QStringLiteral("com.sky.descriptor.infrared_signal_reference");
 			case InfraredSignalConfiguration: return QStringLiteral("com.sky.descriptor.infrared_signal_configuration");
@@ -375,6 +376,7 @@ QString BleUuid::name() const
 			case RebootReason:              return QStringLiteral("Unpair Reason");
 			case UnpairReason:              return QStringLiteral("Reboot Reason");
 			case RcuAction:                 return QStringLiteral("RCU Action");
+			case LastKeypress:              return QStringLiteral("Last Key Press");
 
 			case InfraredSignalReference:   return QStringLiteral("Infrared Signal Reference");
 			case InfraredSignalConfiguration: return QStringLiteral("Infrared Signal Configuration");
