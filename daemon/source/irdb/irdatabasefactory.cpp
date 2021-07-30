@@ -18,15 +18,31 @@
 */
 
 //
-//  qtvfs.h
+//  irdatabasefactory.cpp
 //  SkyBluetoothRcu
 //
 
-#ifndef QTVFS_H
-#define QTVFS_H
+#include "irdatabasefactory.h"
+#ifdef USE_IR_DATABASE_PLUGIN
+#include "irdatabasepluginwrapper.h"
+#endif
 
-#define SQLITE_QT_VFS_NAME "qt-readonly"
 
-int qtvfsRegister(bool makeDefault = false);
+// -----------------------------------------------------------------------------
+/*!
+	Creates a new IrDatabase object
 
-#endif // QTVFS_H
+ */
+QSharedPointer<IrDatabase> IrDatabaseFactory::createDatabase(const QString &pluginPath)
+{
+    QSharedPointer<IrDatabase> db;
+
+#ifdef USE_IR_DATABASE_PLUGIN
+    db = QSharedPointer<IrDatabasePluginWrapper>::create(pluginPath);
+#endif
+
+    if (!db || !db->isValid())
+        db.reset();
+
+    return db;
+}

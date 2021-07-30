@@ -63,7 +63,7 @@ public:
 
 	QString audioFifoDirectory() const;
 
-	QString irDatabasePath() const;
+	QString irDatabasePluginPath() const;
 
 	bool enableScanMonitor() const;
 
@@ -99,7 +99,7 @@ private:
 
 	void setAudioFifoDirectory(const QString &audioFifoPath);
 
-	void setIrDatabaseFile(const QString &irDatabasePath);
+	void setIrDatabasePluginFile(const QString &irDatabasePluginPath);
 
 	void setDisableScanMonitor(const QString &ignore);
 
@@ -126,7 +126,7 @@ private:
 
 	QString m_audioFifoPath;
 
-	QString m_irDatabasePath;
+	QString m_irDatabasePluginPath;
 
 	bool m_enableScanMonitor;
 

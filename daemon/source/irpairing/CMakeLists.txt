@@ -24,10 +24,18 @@ add_library( irpairing
         irpairing.cpp
         )
 
+
 target_include_directories( irpairing
 
+        PUBLIC
+           ${CMAKE_CURRENT_LIST_DIR}
+
         PRIVATE
-        ${Qt5Core_INCLUDE_DIRS}
+           ${Qt5Core_INCLUDE_DIRS}
         )
+
+if( IR_INPUT_DEVICE_NAME )
+    add_definitions(-DIR_INPUT_DEVICE_NAME=\"${IR_INPUT_DEVICE_NAME}\")
+endif()
 
 target_include_directories( irpairing PUBLIC ${CMAKE_CURRENT_LIST_DIR} )

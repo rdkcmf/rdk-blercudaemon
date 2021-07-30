@@ -34,8 +34,10 @@ class IrDatabase;
 class BleRcuController;
 
 class BleRcuControllerProxy;
+#if ENABLE_AS_SERVICE
 #if QT_VERSION > QT_VERSION_CHECK(5, 4, 0)
 class BleRcuASService;
+#endif
 #endif
 
 class ServiceManager
@@ -62,8 +64,10 @@ private:
 #if defined(Q_OS_LINUX)
 	const QDBusConnection m_dbusConn;
 	QSharedPointer<BleRcuControllerProxy> m_dbusProxy;
+#if ENABLE_AS_SERVICE
 #if QT_VERSION > QT_VERSION_CHECK(5, 4, 0)
 	QSharedPointer<BleRcuASService> m_asService;
+#endif
 #endif
 #endif
 

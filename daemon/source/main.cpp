@@ -47,18 +47,12 @@
 #  include "bleconnparamchanger.h"
 #endif
 
-#include "irdb/irdatabase.h"
+#include "irdb/irdatabasefactory.h"
 
 #include "services/servicemanager.h"
 
 #if defined(ENABLE_IRPAIRING)
 #  include "irpairing/irpairing.h"
-#endif
-
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-#if defined(ENABLE_PAIRING_SERVER) && (AI_BUILD_TYPE == AI_DEBUG)
-#  include "debug/httpserver.h"
-#endif
 #endif
 
 #include <signal.h>
@@ -328,8 +322,8 @@ int main(int argc, char *argv[])
 
 	// create the IR database
 	QSharedPointer<IrDatabase> irDatabase;
-#ifndef RDK
-	irDatabase = IrDatabase::create(QStringLiteral(":/irdb.sqlite"));
+#ifdef USE_IR_DATABASE_PLUGIN
+	irDatabase = IrDatabaseFactory::createDatabase(options->irDatabasePluginPath());
 #endif
 	// initialize BTRMGR API before it is used in BleRcuController
 	const auto btrMgrInitializer = BtrMgrAdapter::ApiInitializer{};
@@ -366,20 +360,6 @@ int main(int argc, char *argv[])
 	// auto-enable pairing if the right IR signal is received
 	QSharedPointer<IrPairing> irPairing =
 		QSharedPointer<IrPairing>::create(controller);
-#endif
-
-
-    // (non-fusion builds) create and start the debug http/ws server
-#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
-#if defined(ENABLE_PAIRING_SERVER) && (AI_BUILD_TYPE == AI_DEBUG)
-
-	QSharedPointer<HttpServer> pairingServer;
-	if (options->enablePairingWebServer()) {
-		pairingServer = QSharedPointer<HttpServer>::create(controller);
-		pairingServer->listen();
-	}
-
-#endif // defined(ENABLE_PAIRING_SERVER) && (AI_BUILD_TYPE == AI_DEBUG)
 #endif
 
 

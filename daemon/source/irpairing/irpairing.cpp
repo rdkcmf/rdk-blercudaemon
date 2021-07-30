@@ -98,10 +98,14 @@ IrPairing::IrPairing(const QSharedPointer<BleRcuController> &controller,
  */
 bool IrPairing::isIrInputDevice(const InputDeviceInfo &deviceInfo) const
 {
-#ifdef RDK
-	return deviceInfo.name() == "uinput-remote";
+#ifdef IR_INPUT_DEVICE_NAME
+	return deviceInfo.name() == IR_INPUT_DEVICE_NAME;
 #else
-#	error "Unknown RDK platform"
+	#ifdef RDK
+		return deviceInfo.name() == "uinput-remote";
+	#else
+		#error "Unknown device name"
+	#endif
 #endif
 }
 

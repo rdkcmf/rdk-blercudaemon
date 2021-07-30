@@ -63,6 +63,10 @@ if ( ENABLE_IRPAIRING )
     add_definitions( -DENABLE_PAIRING_SERVER=1 )
 endif()
 
+if( ENABLE_IR_DATABASE_PLUGINS )
+    add_definitions( -DUSE_IR_DATABASE_PLUGIN=1 )
+endif()
+
 
 # Enable C++14 support. The following tells cmake to always add the -std=c++14
 # flag (nb - if CMAKE_CXX_EXTENSIONS is ON then we'll get -std=gnu++14 instead)

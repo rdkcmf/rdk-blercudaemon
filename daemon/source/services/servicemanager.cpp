@@ -24,8 +24,10 @@
 
 #include "servicemanager.h"
 #include "dbus/blercucontroller_proxy.h"
+#if ENABLE_AS_SERVICE
 #if QT_VERSION > QT_VERSION_CHECK(5, 4, 0)
 #include "services/as/blercuasservice.h"
+#endif
 #endif
 
 
@@ -54,6 +56,7 @@ bool ServiceManager::registerAllServices()
 		if (!m_dbusProxy->isRegisteredOnBus())
 			m_dbusProxy->registerOnBus();
 
+#if ENABLE_AS_SERVICE
 #if QT_VERSION > QT_VERSION_CHECK(5, 4, 0)
 		if (!m_asService) {
 			m_asService = QSharedPointer<BleRcuASService>::create(m_dbusConn);
@@ -61,6 +64,7 @@ bool ServiceManager::registerAllServices()
 			if (m_irDatabase)
 				m_asService->setIrDatabase(m_irDatabase);
 		}
+#endif
 #endif
 	}
 #endif // defined(Q_OS_LINUX)
@@ -75,8 +79,10 @@ void ServiceManager::unregisterAllServices()
 	if (m_dbusProxy)
 		m_dbusProxy->unregisterFromBus();
 
+#if ENABLE_AS_SERVICE
 #if QT_VERSION > QT_VERSION_CHECK(5, 4, 0)
 	m_asService.reset();
+#endif
 #endif
 #endif
 
@@ -95,6 +101,7 @@ void ServiceManager::setController(const QSharedPointer<BleRcuController> &contr
 		if (!m_dbusProxy->isRegisteredOnBus())
 			m_dbusProxy->registerOnBus();
 
+#if ENABLE_AS_SERVICE
 #if QT_VERSION > QT_VERSION_CHECK(5, 4, 0)
 		if (!m_asService) {
 			m_asService = QSharedPointer<BleRcuASService>::create(m_dbusConn);
@@ -102,6 +109,7 @@ void ServiceManager::setController(const QSharedPointer<BleRcuController> &contr
 			if (m_irDatabase)
 				m_asService->setIrDatabase(m_irDatabase);
 		}
+#endif
 #endif
 	}
 #endif // defined(Q_OS_LINUX)
@@ -111,7 +119,7 @@ void ServiceManager::setController(const QSharedPointer<BleRcuController> &contr
 void ServiceManager::setIrDatabase(const QSharedPointer<IrDatabase> &irDatabase)
 {
 	m_irDatabase = irDatabase;
-
+#if ENABLE_AS_SERVICE
 #if QT_VERSION > QT_VERSION_CHECK(5, 4, 0)
 #if defined(Q_OS_LINUX)
 
@@ -119,6 +127,7 @@ void ServiceManager::setIrDatabase(const QSharedPointer<IrDatabase> &irDatabase)
 		m_asService->setIrDatabase(irDatabase);
 
 #endif // defined(Q_OS_LINUX)
+#endif
 #endif
 
 }

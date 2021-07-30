@@ -31,15 +31,12 @@
 #include <QStringList>
 #include <QFlags>
 #include <QList>
-#include <QSharedPointer>
+#include <QtPlugin>
 
 class Edid;
 
 class IrDatabase
 {
-public:
-	static QSharedPointer<IrDatabase> create(const QString &dbPath);
-
 public:
 	virtual ~IrDatabase()
 	{ }
@@ -76,6 +73,8 @@ public:
 	virtual IrSignalSet irSignals(RcuType rcuType, int codeId) const = 0;
 
 };
+
+Q_DECLARE_INTERFACE(IrDatabase, "IrDatabaseInterface")
 
 
 #endif // !defined(IRDATABASE_H)

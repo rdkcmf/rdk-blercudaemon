@@ -17,25 +17,29 @@
 # limitations under the License.
 #######################################################################
 
+if ( ENABLE_IR_DATABASE_PLUGINS )
+    list(APPEND ADDITIONAL_SOURCES
+         irdatabasepluginwrapper.cpp)
+endif()
+
 add_library( irdb
 
                 OBJECT
-                   irdatabase_p.h
-                   irsignalset.cpp
-                   irdatabase.cpp
-                   qtvfs.h
-                   qtvfs.cpp
+                   irdatabasefactory.cpp
+                   ${ADDITIONAL_SOURCES}
 
-                   irsignalset.h
-                   irdatabase.h
                 )
 
-add_definitions( -DQTVFS_USE_QRESOURCE )
-
 target_include_directories( irdb
+
+                PUBLIC
+                   ${CMAKE_CURRENT_LIST_DIR}
 
                 PRIVATE
                    ${Qt5Core_INCLUDE_DIRS}
                 )
 
-target_include_directories( irdb PUBLIC ${CMAKE_CURRENT_LIST_DIR} )
+install( FILES       ${CMAKE_CURRENT_SOURCE_DIR}/irdatabase.h
+                     ${CMAKE_CURRENT_SOURCE_DIR}/irsignalset.h
+         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+       )

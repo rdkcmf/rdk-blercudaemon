@@ -18,51 +18,23 @@
 */
 
 //
-//  irsignalset.cpp
+//  irdatabasefactory.h
 //  SkyBluetoothRcu
 //
 
-#include "irsignalset.h"
+#include "irdatabase.h"
+#include <QSharedPointer>
 
 
+#ifndef IRDATABASEFACTORY_H
+#define IRDATABASEFACTORY_H
 
-IrSignalSet::IrSignalSet()
-	: m_codeId(-1)
+class IrDatabaseFactory
 {
-}
+public:
+	static QSharedPointer<IrDatabase> createDatabase(const QString &pluginPath);
+};
 
-IrSignalSet::IrSignalSet(int codeId)
-	: m_codeId(codeId)
-{
-}
 
-IrSignalSet::IrSignalSet(const IrSignalSet &irSignalSet)
-	: m_codeId(irSignalSet.m_codeId)
-	, m_hash(irSignalSet.m_hash)
-{
-}
 
-void IrSignalSet::clear()
-{
-	m_hash.clear();
-}
-
-QByteArray &IrSignalSet::operator[](const Qt::Key &key)
-{
-	return m_hash[key];
-}
-
-const QByteArray IrSignalSet::operator[](const Qt::Key &key) const
-{
-	return m_hash.value(key);
-}
-
-void IrSignalSet::insert(Qt::Key key, const QByteArray &data)
-{
-	m_hash.insert(key, data);
-}
-
-void IrSignalSet::insert(Qt::Key key, QByteArray &&data)
-{
-	m_hash.insert(key, std::move(data));
-}
+#endif // !defined(IRDATABASE_H)

@@ -328,13 +328,13 @@ void BleRcuASService::onRequestStartSearching(const ASRequest &request)
 	qInfo() << "startsearching query params:"  << params;
 
 	// get the timeout for the search if specified
-	int timeoutSecs = -1;
+	int timeoutMillisecs = -1;
 	if (params.contains("timeout")) {
 
 		const QString timeoutStr = params.value("timeout", "-1");
 
 		bool ok = false;
-		timeoutSecs = timeoutStr.toInt(&ok, 10);
+		int timeoutSecs = timeoutStr.toInt(&ok, 10);
 		if (!ok || (timeoutSecs <= 0)) {
 			request.sendErrorReply(400, 102,
 			                       "Invalid Parameters",
@@ -344,10 +344,11 @@ void BleRcuASService::onRequestStartSearching(const ASRequest &request)
 
 		// ensure the timeout will fit into a millisecond int
 		timeoutSecs = qMin(timeoutSecs, INT_MAX / 1000);
+		timeoutMillisecs = timeoutSecs * 1000;
 	}
 
 	// start the scan and return the result
-	if (m_controller->startScanning(timeoutSecs)) {
+	if (m_controller->startScanning(timeoutMillisecs)) {
 		request.sendReply(200);
 	} else {
 		request.sendErrorReply(400, 7570,

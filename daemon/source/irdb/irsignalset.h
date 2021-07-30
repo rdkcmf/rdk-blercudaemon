@@ -33,9 +33,19 @@
 class IrSignalSet
 {
 public:
-	IrSignalSet();
-	explicit IrSignalSet(int codeId);
-	IrSignalSet(const IrSignalSet &irSignalSet);
+	IrSignalSet()
+		: m_codeId(-1)
+	{}
+
+	explicit IrSignalSet(int codeId)
+		: m_codeId(codeId)
+	{}
+
+	IrSignalSet(const IrSignalSet &irSignalSet)
+		: m_codeId(irSignalSet.m_codeId)
+		, m_hash(irSignalSet.m_hash)
+    {}
+
 	~IrSignalSet() = default;
 
 private:
@@ -59,19 +69,26 @@ public:
 	{	return m_hash.isEmpty(); }
 
 	inline QList<Qt::Key> keys() const
-	{	return m_hash.keys();    }
+	{	return m_hash.keys(); }
 
-	void clear();
+	void clear()
+	{	m_hash.clear(); }
 
 	inline bool contains(const Qt::Key &key) const
 	{	return m_hash.contains(key);  }
 
-	QByteArray &operator[](const Qt::Key &key);
-	const QByteArray operator[](const Qt::Key &key) const;
+	QByteArray &operator[](const Qt::Key &key)
+	{	return m_hash[key]; }
+
+	const QByteArray operator[](const Qt::Key &key) const
+	{	return m_hash.value(key); }
 
 public:
-	void insert(Qt::Key key, const QByteArray &data);
-	void insert(Qt::Key key, QByteArray &&data);
+	void insert(Qt::Key key, const QByteArray &data)
+	{	m_hash.insert(key, data); }
+
+	void insert(Qt::Key key, QByteArray &&data)
+	{	m_hash.insert(key, std::move(data)); }
 
 };
 

@@ -47,7 +47,7 @@ CmdLineOptions::CmdLineOptions()
 	, m_hciSocketFd(-1)
 	, m_hciDeviceId(0)
 	, m_audioFifoPath("/tmp")
-	, m_irDatabasePath(":irdb.sqlite")
+	, m_irDatabasePluginPath("/usr/lib/plugins/BleRcu/libirdb.so")
 	, m_enableScanMonitor(true)
 	, m_enablePairingWebServer(false)
 {
@@ -104,8 +104,8 @@ CmdLineOptions::CmdLineOptions()
 		{ QCommandLineOption( { "f", "audio-fifo-dir" }, "Directory to use for audio fifos </tmp>", "path" ),
 			std::bind(&CmdLineOptions::setAudioFifoDirectory, this, std::placeholders::_1) },
 
-		{ QCommandLineOption( { "i", "ir-database" }, "Path to the sqlite IR database to use <:irdb.sqlite>", "path" ),
-			std::bind(&CmdLineOptions::setIrDatabaseFile, this, std::placeholders::_1) },
+		{ QCommandLineOption( { "i", "irdb" }, "Path to the IR database QT plugin", "path" ),
+			std::bind(&CmdLineOptions::setIrDatabasePluginFile, this, std::placeholders::_1) },
 
 		{ QCommandLineOption( { "m", "disable-scan-monitor" }, "Disables the LE scan monitoring for production logging." ),
 			std::bind(&CmdLineOptions::setDisableScanMonitor, this, std::placeholders::_1) },
@@ -290,14 +290,14 @@ QString CmdLineOptions::audioFifoDirectory() const
 
 // -----------------------------------------------------------------------------
 /*!
-	Returns the path to the IR sqlite database file to use.
+	Returns the path to the IR database QT plugin file to use.
 
 	\note Calling this before CmdLineOptions::process() will just return the
 	default value.
  */
-QString CmdLineOptions::irDatabasePath() const
+QString CmdLineOptions::irDatabasePluginPath() const
 {
-	return m_irDatabasePath;
+	return m_irDatabasePluginPath;
 }
 
 // -----------------------------------------------------------------------------
@@ -705,15 +705,15 @@ void CmdLineOptions::setAudioFifoDirectory(const QString &audioFifoPath)
 
 
  */
-void CmdLineOptions::setIrDatabaseFile(const QString &irDatabasePath)
+void CmdLineOptions::setIrDatabasePluginFile(const QString &irDatabasePluginPath)
 {
-	QFileInfo info(irDatabasePath);
+	QFileInfo info(irDatabasePluginPath);
 	if (!info.exists())
-		qWarning("failed to find ir database file @ '%s'", qPrintable(irDatabasePath));
+		qWarning("failed to find ir database plugin file @ '%s'", qPrintable(irDatabasePluginPath));
 	else if (!info.isReadable())
-		qWarning("ir database file @ '%s' is not readable", qPrintable(irDatabasePath));
+		qWarning("ir database plugin file @ '%s' is not readable", qPrintable(irDatabasePluginPath));
 
-	m_irDatabasePath = irDatabasePath;
+	m_irDatabasePluginPath = irDatabasePluginPath;
 }
 
 // -----------------------------------------------------------------------------

@@ -94,6 +94,7 @@ add_executable(
         $<TARGET_OBJECTS:blercu>
         $<TARGET_OBJECTS:services>
         $<TARGET_OBJECTS:configsettings>
+        $<$<BOOL:${ENABLE_IR_DATABASE_PLUGINS}>:$<TARGET_OBJECTS:irdb>>
         $<$<BOOL:${ENABLE_IRPAIRING}>:$<TARGET_OBJECTS:irpairing>>
         $<$<CONFIG:Debug>:$<TARGET_OBJECTS:monitors>>
 
