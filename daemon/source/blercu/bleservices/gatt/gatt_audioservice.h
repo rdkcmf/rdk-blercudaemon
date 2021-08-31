@@ -137,6 +137,7 @@ private:
 	quint8 m_gainLevel;
 
 	QSharedPointer<GattAudioPipe> m_audioPipe;
+	bool m_emitOneTimeStreamingSignal;
 
 private:
 	static const BleUuid m_serviceUuid;

@@ -46,6 +46,7 @@ GattAudioService::GattAudioService()
 	, m_packetsPerFrame(5)
 	, m_timeoutEventId(-1)
 	, m_gainLevel(0xFF)
+	, m_emitOneTimeStreamingSignal(true)
 {
 	// clear the last stats
 	m_lastStats.lastError = NoError;
@@ -509,8 +510,8 @@ void GattAudioService::onEnteredStreamingState()
 	// after 30 seconds
 	m_timeoutEventId = m_stateMachine.postDelayedEvent(StopStreamingRequestEvent, 30000);
 
-	// finally tell anyone who cares that streaming has started
-	emit streamingChanged(true);
+	// Once streaming data is actually received, emit the streamingChanged signal a single time
+	m_emitOneTimeStreamingSignal = true;
 }
 
 // -----------------------------------------------------------------------------
@@ -548,8 +549,11 @@ void GattAudioService::onExitedStreamingState()
 		m_timeoutEventId = -1;
 	}
 
-	// tell anyone who cares that streaming has stopped
-	emit streamingChanged(false);
+	// tell anyone who cares that streaming has stopped, but only if we've received actual
+	// audio data and streamingChanged(true) was previously signaled
+	if (!m_emitOneTimeStreamingSignal) {
+		emit streamingChanged(false);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -647,6 +651,13 @@ void GattAudioService::onExitedStreamingSuperState()
  */
 void GattAudioService::onAudioDataNotification(const QByteArray &value)
 {
+	// This way the streamingChanged signal is emitted only when we actually receive
+	// audio data.  But this should only be emitted for the first notification.
+	if (m_emitOneTimeStreamingSignal) {
+		emit streamingChanged(true);
+		m_emitOneTimeStreamingSignal = false;
+	}
+
 	// all notifications from the audio pipe should be 20 bytes in size, any
 	// other size is an error
 	if (Q_UNLIKELY(value.size() != 20)) {
