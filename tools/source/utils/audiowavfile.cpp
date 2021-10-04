@@ -240,6 +240,7 @@ void AudioWavFile::onPipeClosed()
 	if (m_pipeNotifier) {
 		m_pipeNotifier->setEnabled(false);
 		delete m_pipeNotifier;
+		m_pipeNotifier = nullptr;
 	}
 
 	// close the pipe fd

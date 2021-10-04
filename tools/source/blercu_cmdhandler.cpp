@@ -323,7 +323,7 @@ void BleRcuCmdHandler::listDevices()
 
 		QString name = proxy->name();
 
-		qWarning().nospace() << "Device" << bdaddr << name;
+		qWarning() << "Device" << bdaddr << name;
 	}
 }
 
@@ -355,7 +355,7 @@ void BleRcuCmdHandler::listConnectedDevices()
 
 		if (proxy->connected()) {
 			const QString name = proxy->name();
-			qWarning().nospace() << "Device" << bdaddr << name;
+			qWarning() << "Device" << bdaddr << name;
 		}
 	}
 }
@@ -1216,7 +1216,7 @@ void BleRcuCmdHandler::onDeviceAdded(const QDBusObjectPath &path,
 
 	addDevice(path);
 
-	qWarning().nospace() << "[NEW] Device" << address;
+	qWarning() << "[NEW] Device" << address;
 }
 
 // -----------------------------------------------------------------------------
@@ -1232,7 +1232,7 @@ void BleRcuCmdHandler::onDeviceRemoved(const QDBusObjectPath &path,
 
 	removeDevice(BleAddress(address));
 
-	qWarning().nospace() << "[DEL] Device" << address;
+	qWarning() << "[DEL] Device" << address;
 }
 
 // -----------------------------------------------------------------------------
@@ -1243,7 +1243,7 @@ void BleRcuCmdHandler::onDeviceRemoved(const QDBusObjectPath &path,
  */
 void BleRcuCmdHandler::onPairingStateChanged(bool isPairing)
 {
-	qWarning().nospace() << "[CHG] Pairing:" << (isPairing ? "yes" : "no");
+	qWarning() << "[CHG] Pairing:" << (isPairing ? "yes" : "no");
 }
 
 // -----------------------------------------------------------------------------
@@ -1254,7 +1254,7 @@ void BleRcuCmdHandler::onPairingStateChanged(bool isPairing)
  */
 void BleRcuCmdHandler::onStateChanged(quint32 status)
 {
-	qWarning().nospace() << "[CHG] State:" << getPairingStateName(status);
+	qWarning() << "[CHG] State:" << getPairingStateName(status);
 }
 
 // -----------------------------------------------------------------------------
@@ -1265,7 +1265,7 @@ void BleRcuCmdHandler::onStateChanged(quint32 status)
  */
 void BleRcuCmdHandler::onBatteryLevelChanged(const BleAddress &device, quint8 level)
 {
-	qWarning().nospace() << "[CHG] Device" << device << "BatteryLevel:" << level;
+	qWarning() << "[CHG] Device" << device << "BatteryLevel:" << level;
 }
 
 // -----------------------------------------------------------------------------
@@ -1276,7 +1276,7 @@ void BleRcuCmdHandler::onBatteryLevelChanged(const BleAddress &device, quint8 le
  */
 void BleRcuCmdHandler::onConnectedChanged(const BleAddress &device, bool connected)
 {
-	qWarning().nospace() << "[CHG] Device" << device << "Connected:" << (connected ? "yes" : "no");
+	qWarning() << "[CHG] Device" << device << "Connected:" << (connected ? "yes" : "no");
 }
 
 // -----------------------------------------------------------------------------
@@ -1287,7 +1287,7 @@ void BleRcuCmdHandler::onConnectedChanged(const BleAddress &device, bool connect
  */
 void BleRcuCmdHandler::onNameChanged(const BleAddress &device, const QString &name)
 {
-	qWarning().nospace() << "[CHG] Device" << device << "Name:" << name;
+	qWarning() << "[CHG] Device" << device << "Name:" << name;
 }
 
 // -----------------------------------------------------------------------------
@@ -1298,7 +1298,7 @@ void BleRcuCmdHandler::onNameChanged(const BleAddress &device, const QString &na
  */
 void BleRcuCmdHandler::onIrCodeChanged(const BleAddress &device, quint32 code)
 {
-	qWarning().nospace() << "[CHG] Device" << device << "IrCode:" << code;
+	qWarning() << "[CHG] Device" << device << "IrCode:" << code;
 }
 
 // -----------------------------------------------------------------------------
@@ -1309,7 +1309,7 @@ void BleRcuCmdHandler::onIrCodeChanged(const BleAddress &device, quint32 code)
  */
 void BleRcuCmdHandler::onTouchModeChanged(const BleAddress &device, quint32 mode)
 {
-	qWarning().nospace() << "[CHG] Device" << device << "TouchMode:" << mode;
+	qWarning() << "[CHG] Device" << device << "TouchMode:" << mode;
 }
 
 // -----------------------------------------------------------------------------
@@ -1320,7 +1320,7 @@ void BleRcuCmdHandler::onTouchModeChanged(const BleAddress &device, quint32 mode
  */
 void BleRcuCmdHandler::onAudioStreamingChanged(const BleAddress &device, bool streaming)
 {
-	qWarning().nospace() << "[CHG] Device" << device << "AudioStreaming:" << (streaming ? "yes" : "no");
+	qWarning() << "[CHG] Device" << device << "AudioStreaming:" << (streaming ? "yes" : "no");
 }
 
 // -----------------------------------------------------------------------------
@@ -1331,7 +1331,7 @@ void BleRcuCmdHandler::onAudioStreamingChanged(const BleAddress &device, bool st
  */
 void BleRcuCmdHandler::onAudioGainLevelChanged(const BleAddress &device, qint32 gainLevel)
 {
-	qWarning().nospace() << "[CHG] Device" << device << "AudioGainLevel:" << gainLevel;
+	qWarning() << "[CHG] Device" << device << "AudioGainLevel:" << gainLevel;
 }
 
 // -----------------------------------------------------------------------------
@@ -1342,7 +1342,7 @@ void BleRcuCmdHandler::onAudioGainLevelChanged(const BleAddress &device, qint32 
  */
 void BleRcuCmdHandler::onFwUpgradeStateChanged(const BleAddress &device, bool isUpgrading)
 {
-	qWarning().nospace() << "[CHG] Device" << device << "F/W Upgrading:" << isUpgrading;
+	qWarning() << "[CHG] Device" << device << "F/W Upgrading:" << isUpgrading;
 }
 
 // -----------------------------------------------------------------------------
@@ -1353,6 +1353,6 @@ void BleRcuCmdHandler::onFwUpgradeStateChanged(const BleAddress &device, bool is
  */
 void BleRcuCmdHandler::onFwUpgradeProgressChanged(const BleAddress &device, qint32 progress)
 {
-	qWarning().nospace() << "[CHG] Device" << device << "F/W Upgrade Progress:" << progress;
+	qWarning() << "[CHG] Device" << device << "F/W Upgrade Progress:" << progress;
 }
 
