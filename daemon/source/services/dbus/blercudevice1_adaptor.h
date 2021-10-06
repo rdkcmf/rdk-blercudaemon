@@ -102,7 +102,10 @@ class BleRcuDevice1Adaptor : public DBusAbstractAdaptor
 	            "    <property access=\"read\" type=\"b\" name=\"AudioStreaming\">\n"
 	            "      <annotation value=\"true\" name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\"/>\n"
 	            "    </property>\n"
-	            "    <property access=\"readwrite\" type=\"i\" name=\"AudioGainLevel\">\n"
+	            "    <property access=\"readwrite\" type=\"y\" name=\"AudioGainLevel\">\n"
+	            "      <annotation value=\"true\" name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\"/>\n"
+	            "    </property>\n"
+	            "    <property access=\"readwrite\" type=\"u\" name=\"AudioCodecs\">\n"
 	            "      <annotation value=\"true\" name=\"org.freedesktop.DBus.Property.EmitsChangedSignal\"/>\n"
 	            "    </property>\n"
 	            "    <property access=\"read\" type=\"o\" name=\"Controller\">\n"
@@ -159,7 +162,8 @@ class BleRcuDevice1Adaptor : public DBusAbstractAdaptor
 
 public:
 	Q_PROPERTY(QString Address READ address)
-	Q_PROPERTY(qint32 AudioGainLevel READ audioGainLevel WRITE setAudioGainLevel)
+	Q_PROPERTY(quint8 AudioGainLevel READ audioGainLevel WRITE setAudioGainLevel)
+	Q_PROPERTY(quint32 AudioCodecs READ audioCodecs)
 	Q_PROPERTY(bool AudioStreaming READ audioStreaming)
 	Q_PROPERTY(quint8 BatteryLevel READ batteryLevel)
 	Q_PROPERTY(bool Connected READ connected)
@@ -194,6 +198,8 @@ public:
 
 	quint8 audioGainLevel() const;
 	void setAudioGainLevel(quint8 value);
+
+	quint32 audioCodecs() const;
 
 	bool audioStreaming() const;
 
@@ -247,6 +253,7 @@ private:
 
 	void onAudioStreamingChanged(bool streaming);
 	void onAudioGainLevelChanged(quint8 gainLevel);
+	void onAudioCodecsChanged(quint32 codecs);
 
 	void onTouchModeChanged(quint8 touchMode);
 	void onTouchModeSettabilityChanged(bool settable);

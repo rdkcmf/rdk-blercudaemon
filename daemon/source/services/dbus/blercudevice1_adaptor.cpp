@@ -114,6 +114,8 @@ BleRcuDevice1Adaptor::BleRcuDevice1Adaptor(const QSharedPointer<BleRcuDevice> &d
 	                 this, &BleRcuDevice1Adaptor::onAudioStreamingChanged);
 	QObject::connect(audioService.data(), &BleRcuAudioService::gainLevelChanged,
 	                 this, &BleRcuDevice1Adaptor::onAudioGainLevelChanged);
+	QObject::connect(audioService.data(), &BleRcuAudioService::audioCodecsChanged,
+	                 this, &BleRcuDevice1Adaptor::onAudioCodecsChanged);
 
 
 	// get the touch service and connect to the mode change signal
@@ -301,6 +303,30 @@ quint8 BleRcuDevice1Adaptor::audioGainLevel() const
 void BleRcuDevice1Adaptor::onAudioGainLevelChanged(quint8 gainLevel)
 {
 	emitPropertyChanged(QStringLiteral("AudioGainLevel"), gainLevel);
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	DBus get property call for com.sky.BleRcuDevice1.AudioCodecs
+
+ */
+quint32 BleRcuDevice1Adaptor::audioCodecs() const
+{
+	const QSharedPointer<const BleRcuAudioService> service = m_device->audioService();
+	return service->audioCodecs();
+}
+// -----------------------------------------------------------------------------
+/*!
+	\internal
+
+	Slot called by the \l{BleRcuAudioService} object when when the audio codecs
+	changes. We hook this signal to emit a property change signal over
+	dbus.
+
+ */
+void BleRcuDevice1Adaptor::onAudioCodecsChanged(quint32 codecs)
+{
+	emitPropertyChanged(QStringLiteral("AudioCodecs"), codecs);
 }
 
 // -----------------------------------------------------------------------------

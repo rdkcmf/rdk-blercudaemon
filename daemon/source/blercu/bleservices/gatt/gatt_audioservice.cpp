@@ -46,6 +46,7 @@ GattAudioService::GattAudioService()
 	, m_packetsPerFrame(5)
 	, m_timeoutEventId(-1)
 	, m_gainLevel(0xFF)
+	, m_audioCodecs(0)
 	, m_emitOneTimeStreamingSignal(true)
 {
 	// clear the last stats
@@ -134,11 +135,21 @@ void GattAudioService::init()
  */
 bool GattAudioService::getAudioCodecsCharacteristic(const QSharedPointer<const BleGattService> &gattService)
 {
-	Q_UNUSED(gattService);
+	// don't re-create if we already have valid proxies
+	if (m_audioCodecsCharacteristic && m_audioCodecsCharacteristic->isValid())
+		return true;
 
-	// TODO: implement if needed
+	// get the chararacteristic for the audio control
+	m_audioCodecsCharacteristic = gattService->characteristic(BleUuid::AudioCodecs);
+	if (!m_audioCodecsCharacteristic || !m_audioCodecsCharacteristic->isValid()) {
+		qWarning("failed to get audio codecs characteristic");
+		return false;
+	}
 
-	return false;
+	// set the timeout to two slave latencies, rather than the full 30 seconds
+	m_audioCodecsCharacteristic->setTimeout(11000);
+
+	return true;
 }
 
 // -----------------------------------------------------------------------------
@@ -244,12 +255,14 @@ bool GattAudioService::start(const QSharedPointer<const BleGattService> &gattSer
 	// get the dbus proxies to the audio characteristics
 	if (!getAudioGainCharacteristic(gattService) ||
 	    !getAudioControlCharacteristic(gattService) ||
-	    !getAudioDataCharacteristic(gattService)) {
+	    !getAudioDataCharacteristic(gattService) ||
+	    !getAudioCodecsCharacteristic(gattService)) {
 		qWarning("failed to get one or more gatt characteristics");
 		return false;
 	}
 
 	requestGainLevel();
+	requestAudioCodecs();
 
 	// check we're not already started
 	if (m_stateMachine.state() != IdleState) {
@@ -703,6 +716,16 @@ quint8 GattAudioService::gainLevel() const
 
 // -----------------------------------------------------------------------------
 /*!
+	\overload
+	Audio Codecs bit mask listing the codecs supported by the remote
+ */
+quint32 GattAudioService::audioCodecs() const
+{
+	return m_audioCodecs;
+}
+
+// -----------------------------------------------------------------------------
+/*!
 	\internal
 
 	Sends a request to org.bluez.GattCharacteristic1.Value() to get the value
@@ -728,8 +751,9 @@ void GattAudioService::requestGainLevel()
 				qError("gain value received has invalid length (%d bytes)",
 					value.length());
 			} else {
-				qInfo() << "Successfully read from RCU gain level =" << static_cast<quint8>(value.at(0));
 				m_gainLevel = static_cast<quint8>(value.at(0));
+				qInfo() << "Successfully read from RCU gain level =" << m_gainLevel;
+				emit gainLevelChanged(m_gainLevel);
 			}
 		};
 
@@ -737,6 +761,55 @@ void GattAudioService::requestGainLevel()
 	// send a request to the bluez daemon to start notifing us of battery
 	// level changes
 	Future<QByteArray> result = m_audioGainCharacteristic->readValue();
+	if (!result.isValid() || result.isError()) {
+		errorCallback(result.errorName(), result.errorMessage());
+		return;
+	} else if (result.isFinished()) {
+		successCallback(result.result());
+		return;
+	}
+
+	// connect functors to the future async completion
+	result.connectErrored(this, errorCallback);
+	result.connectFinished(this, successCallback);
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	\internal
+
+	Sends a request to org.bluez.GattCharacteristic1.Value() to get the value
+	propery of the characteristic which contains the current audio codec.
+
+ */
+void GattAudioService::requestAudioCodecs()
+{
+	// lambda called if an error occurs enabling the notifications
+	const std::function<void(const QString&, const QString&)> errorCallback =
+		[this](const QString &errorName, const QString &errorMessage)
+		{
+			qError() << "failed to get audio codec due to"
+			         << errorName << errorMessage;
+		};
+
+	// lamda called if notifications are successifully enabled
+	const std::function<void(const QByteArray &value)> successCallback =
+		[this](const QByteArray &value)
+		{
+			// sanity check the data received
+			if (value.length() != sizeof(m_audioCodecs)) {
+				qError("audio codec received has invalid length (%d bytes)",
+					value.length());
+			} else {
+				memcpy(&m_audioCodecs, value.constData(), sizeof(m_audioCodecs));
+				qInfo().nospace() << "Successfully read from RCU audio codecs bit mask = 0x" << hex << m_audioCodecs;
+				emit audioCodecsChanged(m_audioCodecs);
+			}
+		};
+
+
+	// send a request to the bluez daemon for characteristic value
+	Future<QByteArray> result = m_audioCodecsCharacteristic->readValue();
 	if (!result.isValid() || result.isError()) {
 		errorCallback(result.errorName(), result.errorMessage());
 		return;
