@@ -520,14 +520,14 @@ void GattDeviceInfoService::setSystemId(const QByteArray &value)
 		return;
 	}
 
-	m_systemId = (quint64(value[0]) << 32) |
-	             (quint64(value[1]) << 24) |
-	             (quint64(value[2]) << 16) |
-	             (quint64(value[3]) <<  8) |
-	             (quint64(value[4]) <<  0) |
-	             (quint64(value[5]) << 40) |
-	             (quint64(value[6]) << 48) |
-	             (quint64(value[7]) << 56);
+	m_systemId = (quint64(value[0]) << 56) |
+	             (quint64(value[1]) << 48) |
+	             (quint64(value[2]) << 40) |
+	             (quint64(value[3]) << 32) |
+	             (quint64(value[4]) << 24) |
+	             (quint64(value[5]) << 16) |
+	             (quint64(value[6]) <<  8) |
+	             (quint64(value[7]) <<  0);
 
 	qInfo("system id: 0x%016llx", m_systemId);
 }
