@@ -1133,6 +1133,9 @@ void GattUpgradeService::onERRORPacket(const quint8 data[2])
 		case 0x06:
 			m_lastError = QStringLiteral("Internal error from RCU");
 			break;
+		case 0x07:
+			m_lastError = QStringLiteral("Invalid hash error from RCU");
+			break;
 		default:
 			m_lastError = QString_asprintf("Received unknown error (0x%02hhx) from RCU",
 			                                data[1]);
