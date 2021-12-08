@@ -667,11 +667,8 @@ QMap<Qt::Key, QByteArray> GattInfraredService::getIrSignalData(qint32 codeId,
 	QMap<Qt::Key, QByteArray> irSignalData;
 	for (const Qt::Key &requiredKey : keyCodes) {
 
-		if (irSignalSet.contains(requiredKey)) {
-#ifndef RDK
+		if (irSignalSet.contains(requiredKey))
 			irSignalData.insert(requiredKey, irSignalSet[requiredKey]);
-#endif
-		}
 		else
 			irSignalData.insert(requiredKey, QByteArray());
 	}
