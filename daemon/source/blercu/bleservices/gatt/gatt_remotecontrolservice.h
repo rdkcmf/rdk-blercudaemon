@@ -55,7 +55,11 @@ public:
 	quint8 unpairReason() const override;
 	quint8 rebootReason() const override;
 	quint8 lastKeypress() const override;
+	quint8 advConfig() const override;
+	QByteArray advConfigCustomList() const override;
 	Future<> sendRcuAction(quint8 action) override;
+	Future<> writeAdvertisingConfig(quint8 config, const QByteArray &customList) override;
+
 
 public:
 	bool start(const QSharedPointer<const BleGattService> &gattService);
@@ -87,15 +91,23 @@ private:
 	void requestUnpairReason();
 	void requestRebootReason();
 	void requestLastKeypress();
+	void requestAdvConfig();
+	void requestAdvConfigCustomList();
 	
 	void onRcuActionReply();
 	void onRcuActionError(const QString &errorName, const QString &errorMessage);
+	void onWriteAdvConfigReply();
+	void onWriteAdvConfigError(const QString &errorName, const QString &errorMessage);
+	void onWriteCustomConfigReply();
+	void onWriteCustomConfigError(const QString &errorName, const QString &errorMessage);
 
 private:
 	QSharedPointer<BleGattCharacteristic> m_unpairReasonCharacteristic;
 	QSharedPointer<BleGattCharacteristic> m_rebootReasonCharacteristic;
 	QSharedPointer<BleGattCharacteristic> m_rcuActionCharacteristic;
 	QSharedPointer<BleGattCharacteristic> m_lastKeypressCharacteristic;
+	QSharedPointer<BleGattCharacteristic> m_advConfigCharacteristic;
+	QSharedPointer<BleGattCharacteristic> m_advConfigCustomListCharacteristic;
 
 	StateMachine m_stateMachine;
 
@@ -103,6 +115,8 @@ private:
 	quint8 m_rebootReason;
 	quint8 m_rcuAction;
 	quint8 m_lastKeypress;
+	quint8 m_advConfig;
+	QByteArray m_advConfigCustomList;
 
 	QSharedPointer< Promise<> > m_promiseResults;
 
@@ -112,6 +126,8 @@ private:
 	static const BleUuid m_rebootReasonCharUuid;
 	static const BleUuid m_rcuActionCharUuid;
 	static const BleUuid m_lastKeypressCharUuid;
+	static const BleUuid m_advConfigCharUuid;
+	static const BleUuid m_advConfigCustomListCharUuid;
 
 private:
 	static const QEvent::Type StartServiceRequestEvent = QEvent::Type(QEvent::User + 1);

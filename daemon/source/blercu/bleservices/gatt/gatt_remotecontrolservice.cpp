@@ -37,6 +37,10 @@ const BleUuid GattRemoteControlService::m_unpairReasonCharUuid(BleUuid::UnpairRe
 const BleUuid GattRemoteControlService::m_rebootReasonCharUuid(BleUuid::RebootReason);
 const BleUuid GattRemoteControlService::m_rcuActionCharUuid(BleUuid::RcuAction);
 const BleUuid GattRemoteControlService::m_lastKeypressCharUuid(BleUuid::LastKeypress);
+const BleUuid GattRemoteControlService::m_advConfigCharUuid(BleUuid::AdvertisingConfig);
+const BleUuid GattRemoteControlService::m_advConfigCustomListCharUuid(BleUuid::AdvertisingConfigCustomList);
+
+static QByteArray advConfigCustomList_toWrite;
 
 
 GattRemoteControlService::GattRemoteControlService()
@@ -45,6 +49,7 @@ GattRemoteControlService::GattRemoteControlService()
 	, m_rebootReason(0xFF)
 	, m_rcuAction(0xFF)
 	, m_lastKeypress(0xFF)
+	, m_advConfig(0xFF)
 {
 	// create the basic statemachine
 	init();
@@ -84,26 +89,26 @@ void GattRemoteControlService::init()
 	m_stateMachine.addState(RunningState, QStringLiteral("Running"));
 
 
-	// add the transitions:      From State                    -> Event                    ->  To State
-	m_stateMachine.addTransition(IdleState,                    StartServiceRequestEvent,   StartReadLastKeypressState);
+	// add the transitions:      From State                  -> Event                    ->  To State
+	m_stateMachine.addTransition(IdleState,                  StartServiceRequestEvent,   StartReadLastKeypressState);
 
 	// Need to read last keypress characteristic first so we can notify its initial value at the earliest possible time.
-	m_stateMachine.addTransition(StartReadLastKeypressState,   RetryStartNotifyEvent,      StartReadLastKeypressState);
-	m_stateMachine.addTransition(StartReadLastKeypressState,   StopServiceRequestEvent,    IdleState);
-	m_stateMachine.addTransition(StartReadLastKeypressState,   StartedNotifingEvent,       StartUnpairNotifyState);
+	m_stateMachine.addTransition(StartReadLastKeypressState, RetryStartNotifyEvent,      StartReadLastKeypressState);
+	m_stateMachine.addTransition(StartReadLastKeypressState, StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(StartReadLastKeypressState, StartedNotifingEvent,       StartUnpairNotifyState);
 
-	m_stateMachine.addTransition(StartUnpairNotifyState,       RetryStartNotifyEvent,      StartUnpairNotifyState);
-	m_stateMachine.addTransition(StartUnpairNotifyState,       StopServiceRequestEvent,    IdleState);
-	m_stateMachine.addTransition(StartUnpairNotifyState,       StartedNotifingEvent,       StartRebootNotifyState);
+	m_stateMachine.addTransition(StartUnpairNotifyState,     RetryStartNotifyEvent,      StartUnpairNotifyState);
+	m_stateMachine.addTransition(StartUnpairNotifyState,     StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(StartUnpairNotifyState,     StartedNotifingEvent,       StartRebootNotifyState);
 
-	m_stateMachine.addTransition(StartRebootNotifyState,       RetryStartNotifyEvent,      StartRebootNotifyState);
-	m_stateMachine.addTransition(StartRebootNotifyState,       StopServiceRequestEvent,    IdleState);
-	m_stateMachine.addTransition(StartRebootNotifyState,       StartedNotifingEvent,       StartingState);
+	m_stateMachine.addTransition(StartRebootNotifyState,     RetryStartNotifyEvent,      StartRebootNotifyState);
+	m_stateMachine.addTransition(StartRebootNotifyState,     StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(StartRebootNotifyState,     StartedNotifingEvent,       StartingState);
 
-	m_stateMachine.addTransition(StartingState,                ServiceReadyEvent,          RunningState);
-	m_stateMachine.addTransition(StartingState,                StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(StartingState,              ServiceReadyEvent,          RunningState);
+	m_stateMachine.addTransition(StartingState,              StopServiceRequestEvent,    IdleState);
 
-	m_stateMachine.addTransition(RunningState,                 StopServiceRequestEvent,    IdleState);
+	m_stateMachine.addTransition(RunningState,               StopServiceRequestEvent,    IdleState);
 
 
 	// connect to the state entry signal
@@ -144,6 +149,22 @@ bool GattRemoteControlService::start(const QSharedPointer<const BleGattService> 
 		}
 	}
 	// create the bluez dbus proxy to the characteristic
+	if (!m_advConfigCharacteristic || !m_advConfigCharacteristic->isValid()) {
+		// get the chararacteristic
+		m_advConfigCharacteristic = gattService->characteristic(m_advConfigCharUuid);
+		if (!m_advConfigCharacteristic || !m_advConfigCharacteristic->isValid()) {
+			qWarning("Failed to get advertising config characteristic, check that remote firmware supports this feature.  Continuing anyway...");
+		}
+	}
+	// create the bluez dbus proxy to the characteristic
+	if (!m_advConfigCustomListCharacteristic || !m_advConfigCustomListCharacteristic->isValid()) {
+		// get the chararacteristic
+		m_advConfigCustomListCharacteristic = gattService->characteristic(m_advConfigCustomListCharUuid);
+		if (!m_advConfigCustomListCharacteristic || !m_advConfigCustomListCharacteristic->isValid()) {
+			qWarning("Failed to get advertising config custom list characteristic, check that remote firmware supports this feature.  Continuing anyway...");
+		}
+	}
+	// create the bluez dbus proxy to the characteristic
 	if (!m_unpairReasonCharacteristic || !m_unpairReasonCharacteristic->isValid()) {
 		// get the chararacteristic
 		m_unpairReasonCharacteristic = gattService->characteristic(m_unpairReasonCharUuid);
@@ -181,6 +202,9 @@ bool GattRemoteControlService::start(const QSharedPointer<const BleGattService> 
 		}
 	}
 
+	requestAdvConfig();
+	requestAdvConfigCustomList();
+
 	// check we're not already started
 	if (m_stateMachine.state() != IdleState) {
 		qWarning("remote control service already started");
@@ -209,6 +233,8 @@ void GattRemoteControlService::onEnteredState(int state)
 {
 	if (state == IdleState) {
 		m_lastKeypressCharacteristic.reset();
+		m_advConfigCharacteristic.reset();
+		m_advConfigCustomListCharacteristic.reset();
 		m_unpairReasonCharacteristic.reset();
 		m_rebootReasonCharacteristic.reset();
 		m_rcuActionCharacteristic.reset();
@@ -323,9 +349,7 @@ void GattRemoteControlService::requestStartRebootNotify()
 
 // -----------------------------------------------------------------------------
 /*!
-	Starts sending the 'find me' signal, or more precisely adds an event to the
-	state machine to trigger it to move into the 'start signalling state', which
-	will send the request to the RCU.
+	Write RCU Action characteristic.
 
 	This method will fail and return \c false if the service is not started or
 	it is already signalling, i.e. should only be called it \a state() returns
@@ -393,8 +417,7 @@ void GattRemoteControlService::onRcuActionError(const QString &errorName,
 /*!
 	\internal
 
-	Slot called a reply is received from the vendor daemon after a request to
-	start / stop the find me signalling.
+	Slot called when a reply is received from the vendor daemon after a request
  */
 void GattRemoteControlService::onRcuActionReply()
 {
@@ -546,6 +569,227 @@ void GattRemoteControlService::requestLastKeypress()
 /*!
 	\internal
 
+	Sends a request to org.bluez.GattCharacteristic1.Value() to get the value
+	propery of the characteristic which contains the advertising config.
+
+ */
+void GattRemoteControlService::requestAdvConfig()
+{
+	////////////////////////////////////
+	// Advertising config
+	////////////////////////////////////
+	// lambda called if an error occurs reading the characteristic
+	const std::function<void(const QString&, const QString&)> errorCallback =
+		[this](const QString &errorName, const QString &errorMessage)
+		{
+			qError() << "Failed to read advertising config due to" << errorName << errorMessage;
+		};
+
+	// lambda called after successfully reading the characteristic
+	const std::function<void(const QByteArray &value)> successCallback =
+		[this](const QByteArray &value)
+		{
+			m_advConfig = static_cast<quint8>(value.at(0));
+			qInfo().nospace() << "Successfully read advertising config characteristic, value = 0x" << hex << m_advConfig;
+			emit advConfigChanged(m_advConfig);
+		};
+
+	if (m_advConfigCharacteristic && m_advConfigCharacteristic->isValid()) {
+		// send a request to the bluez daemon to read the characteristic
+		Future<QByteArray> result = m_advConfigCharacteristic->readValue();
+		if (!result.isValid() || result.isError()) {
+			errorCallback(result.errorName(), result.errorMessage());
+			return;
+		} else if (result.isFinished()) {
+			successCallback(result.result());
+			return;
+		}
+
+		// connect functors to the future async completion
+		result.connectErrored(this, errorCallback);
+		result.connectFinished(this, successCallback);
+	} else {
+		qError() << "m_advConfigCharacteristic is not valid, check that the remote firmware version supports this feature.";
+	}
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	\internal
+
+	Sends a request to org.bluez.GattCharacteristic1.Value() to get the value
+	propery of the characteristic which contains the advertising config.
+
+ */
+void GattRemoteControlService::requestAdvConfigCustomList()
+{
+	////////////////////////////////////
+	// Advertising config custom list
+	////////////////////////////////////
+
+	// lambda called if an error occurs reading the characteristic
+	const std::function<void(const QString&, const QString&)> errorCallback =
+		[this](const QString &errorName, const QString &errorMessage)
+		{
+			qError() << "Failed to read custom advertising config due to" << errorName << errorMessage;
+		};
+
+	// lambda called after successfully reading the characteristic
+	const std::function<void(const QByteArray &value)> successCallback =
+		[this](const QByteArray &value)
+		{
+			m_advConfigCustomList = value;
+			qInfo() << "Successfully read advertising config custom list characteristic";
+			emit advConfigCustomListChanged(m_advConfigCustomList);
+		};
+	if (m_advConfigCustomListCharacteristic && m_advConfigCustomListCharacteristic->isValid()) {
+		// send a request to the bluez daemon to read the characteristic
+		Future<QByteArray> result = m_advConfigCustomListCharacteristic->readValue();
+		if (!result.isValid() || result.isError()) {
+			errorCallback(result.errorName(), result.errorMessage());
+			return;
+		} else if (result.isFinished()) {
+			successCallback(result.result());
+			return;
+		}
+
+		// connect functors to the future async completion
+		result.connectErrored(this, errorCallback);
+		result.connectFinished(this, successCallback);
+	} else {
+		qError() << "m_advConfigCustomListCharacteristic is not valid, check that the remote firmware version supports this feature.";
+	}
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	This method will fail and return \c false if the service is not started or
+	it is already signalling, i.e. should only be called it \a state() returns
+	\a RemoteControlService::Ready.
+ */
+Future<> GattRemoteControlService::writeAdvertisingConfig(quint8 config, const QByteArray &customList)
+{
+	// check the service is ready
+	if (!isReady()) {
+		return Future<>::createErrored(BleRcuError::errorString(BleRcuError::Rejected),
+		                               QStringLiteral("Service is not ready"));
+	}
+
+	// check we don't already have an outstanding pending call
+	if (m_promiseResults) {
+		return Future<>::createErrored(BleRcuError::errorString(BleRcuError::Busy),
+		                               QStringLiteral("Request already in progress"));
+	}
+
+	if (!m_advConfigCharacteristic || !m_advConfigCharacteristic->isValid() ||
+	    !m_advConfigCustomListCharacteristic || !m_advConfigCustomListCharacteristic->isValid()) {
+		return Future<>::createErrored(BleRcuError::errorString(BleRcuError::Rejected),
+		                               QStringLiteral("Advertising config characteristic is not valid, check that the remote firmware version supports this feature."));
+	}
+
+	advConfigCustomList_toWrite = customList;
+
+	// send a request to the vendor daemon write the characteristic, and connect the reply to a listener
+	const QByteArray value(1, config);
+	qWarning() << "sending advertising config =" <<  config;
+	Future<> result = m_advConfigCharacteristic->writeValue(value);
+	if (!result.isValid() || result.isError()) {
+		return Future<>::createErrored(BleRcuError::errorString(BleRcuError::General),
+		                               QStringLiteral("Failed to issue request"));
+	} else if (result.isFinished()) {
+		return Future<>::createFinished();
+	}
+
+	// connect the future events
+	result.connectFinished(this, &GattRemoteControlService::onWriteAdvConfigReply);
+	result.connectErrored(this, &GattRemoteControlService::onWriteAdvConfigError);
+
+	// create a new pending result object to notify the caller when the request is complete
+	m_promiseResults = QSharedPointer<Promise<>>::create();
+	return m_promiseResults->future();
+}
+
+
+void GattRemoteControlService::onWriteAdvConfigError(const QString &errorName,
+                                                     const QString &errorMessage)
+{
+	qError() << "Failed to write advertising config due to" << errorName << errorMessage;
+
+	// signal the client that we failed
+	if (m_promiseResults) {
+		m_promiseResults->setError(BleRcuError::errorString(BleRcuError::General),
+		                           errorMessage);
+		m_promiseResults.reset();
+	}
+}
+void GattRemoteControlService::onWriteAdvConfigReply()
+{
+	requestAdvConfig();
+
+	// there should be a valid pending results object, if not something has gone wrong
+	if (!m_promiseResults) {
+		qError("received a dbus reply message with no matching pending operation");
+		return;
+	}
+
+	qInfo("Advertising config written successfully");
+	if (!advConfigCustomList_toWrite.isEmpty()) {
+		// send a request to the vendor daemon write the characteristic, and connect the reply to a listener
+		qInfo() << "Writing custom config list =" << advConfigCustomList_toWrite.toHex();
+		Future<> result = m_advConfigCustomListCharacteristic->writeValue(advConfigCustomList_toWrite);
+		if (!result.isValid() || result.isError()) {
+			Future<>::createErrored(BleRcuError::errorString(BleRcuError::General),
+										QStringLiteral("Failed to issue request"));
+		} else if (result.isFinished()) {
+			Future<>::createFinished();
+		}
+
+		// connect the future events
+		result.connectFinished(this, &GattRemoteControlService::onWriteCustomConfigReply);
+		result.connectErrored(this, &GattRemoteControlService::onWriteCustomConfigError);
+	} else {
+		// write succeeded and no custom config to write, so finish the promise
+		m_promiseResults->setFinished();
+		m_promiseResults.reset();
+	}
+}
+
+void GattRemoteControlService::onWriteCustomConfigError(const QString &errorName,
+                                                        const QString &errorMessage)
+{
+	qError() << "Failed to write custom config due to" << errorName << errorMessage;
+
+	// signal the client that we failed
+	if (m_promiseResults) {
+		m_promiseResults->setError(BleRcuError::errorString(BleRcuError::General),
+		                           errorMessage);
+		m_promiseResults.reset();
+	}
+}
+void GattRemoteControlService::onWriteCustomConfigReply()
+{
+	requestAdvConfigCustomList();
+
+	// there should be a valid pending results object, if not something has gone wrong
+	if (!m_promiseResults) {
+		qError("received a dbus reply message with no matching pending operation");
+		return;
+	}
+
+	qInfo("Custom config list written successfully");
+
+	// non-error so complete the pending operation and post a message to the
+	// state machine
+	m_promiseResults->setFinished();
+	m_promiseResults.reset();
+}
+
+
+
+// -----------------------------------------------------------------------------
+/*!
+	\internal
+
 	Internal slot called when a notification from the remote device is sent
 	due to unpair reason change.
  */
@@ -607,4 +851,22 @@ quint8 GattRemoteControlService::rebootReason() const
 quint8 GattRemoteControlService::lastKeypress() const
 {
 	return m_lastKeypress;
+}
+// -----------------------------------------------------------------------------
+/*!
+	\overload
+
+ */
+quint8 GattRemoteControlService::advConfig() const
+{
+	return m_advConfig;
+}
+// -----------------------------------------------------------------------------
+/*!
+	\overload
+
+ */
+QByteArray GattRemoteControlService::advConfigCustomList() const
+{
+	return m_advConfigCustomList;
 }

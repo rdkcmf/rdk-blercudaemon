@@ -156,6 +156,10 @@ BleRcuDevice1Adaptor::BleRcuDevice1Adaptor(const QSharedPointer<BleRcuDevice> &d
 	                 this, &BleRcuDevice1Adaptor::onRebootReasonChanged);
 	QObject::connect(remoteControlService.data(), &BleRcuRemoteControlService::lastKeypressChanged,
 	                 this, &BleRcuDevice1Adaptor::onLastKeypressChanged);
+	QObject::connect(remoteControlService.data(), &BleRcuRemoteControlService::advConfigChanged,
+	                 this, &BleRcuDevice1Adaptor::onAdvConfigChanged);
+	QObject::connect(remoteControlService.data(), &BleRcuRemoteControlService::advConfigCustomListChanged,
+	                 this, &BleRcuDevice1Adaptor::onAdvConfigCustomListChanged);
 }
 
 BleRcuDevice1Adaptor::~BleRcuDevice1Adaptor()
@@ -1007,6 +1011,20 @@ void BleRcuDevice1Adaptor::SendRcuAction(quint8 action, const QDBusMessage &mess
 
 // -----------------------------------------------------------------------------
 /*!
+	DBus method call handler for com.sky.BleRcuDevice1.SendRcuAction
+
+ */
+void BleRcuDevice1Adaptor::WriteAdvertisingConfig(quint8 config, const QByteArray &customList, const QDBusMessage &message)
+{
+	const QSharedPointer<BleRcuRemoteControlService> service = m_device->remoteControlService();
+
+	// erase the signals and convert the async results to a dbus reply
+	Future<> result = service->writeAdvertisingConfig(config, customList);
+	connectFutureToDBusReply(message, result);
+}
+
+// -----------------------------------------------------------------------------
+/*!
 	DBus get property call for com.sky.BleRcuDevice1.UnpairReason
 
  */
@@ -1035,6 +1053,26 @@ quint8 BleRcuDevice1Adaptor::lastKeypress() const
 	const QSharedPointer<const BleRcuRemoteControlService> service = m_device->remoteControlService();
 	return service->lastKeypress();
 }
+// -----------------------------------------------------------------------------
+/*!
+	DBus get property call for com.sky.BleRcuDevice1.AdvertisingConfig
+
+ */
+quint8 BleRcuDevice1Adaptor::advConfig() const
+{
+	const QSharedPointer<const BleRcuRemoteControlService> service = m_device->remoteControlService();
+	return service->advConfig();
+}
+// -----------------------------------------------------------------------------
+/*!
+	DBus get property call for com.sky.BleRcuDevice1.AdvertisingConfigCustomList
+
+ */
+QByteArray BleRcuDevice1Adaptor::advConfigCustomList() const
+{
+	const QSharedPointer<const BleRcuRemoteControlService> service = m_device->remoteControlService();
+	return service->advConfigCustomList();
+}
 
 // -----------------------------------------------------------------------------
 /*!
@@ -1057,4 +1095,12 @@ void BleRcuDevice1Adaptor::onRebootReasonChanged(quint8 reason)
 void BleRcuDevice1Adaptor::onLastKeypressChanged(quint8 key)
 {
 	emitPropertyChanged<quint8>(QStringLiteral("LastKeypress"), key);
+}
+void BleRcuDevice1Adaptor::onAdvConfigChanged(quint8 config)
+{
+	emitPropertyChanged<quint8>(QStringLiteral("AdvertisingConfig"), config);
+}
+void BleRcuDevice1Adaptor::onAdvConfigCustomListChanged(QByteArray &customList)
+{
+	emitPropertyChanged<QByteArray>(QStringLiteral("AdvertisingConfigCustomList"), customList);
 }

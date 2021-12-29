@@ -45,12 +45,17 @@ public:
 	virtual quint8 unpairReason() const = 0;
 	virtual quint8 rebootReason() const = 0;
 	virtual quint8 lastKeypress() const = 0;
+	virtual quint8 advConfig() const = 0;
+	virtual QByteArray advConfigCustomList() const = 0;
 	virtual Future<> sendRcuAction(quint8 action) = 0;
+	virtual Future<> writeAdvertisingConfig(quint8 config, const QByteArray &customList) = 0;
 
 signals:
 	void unpairReasonChanged(quint8 reason);
 	void rebootReasonChanged(quint8 reason);
 	void lastKeypressChanged(quint8 key);
+	void advConfigChanged(quint8 key);
+	void advConfigCustomListChanged(QByteArray &customList);
 };
 
 #endif // !defined(BLERCUREMOTECONTROLSERVICE_H)

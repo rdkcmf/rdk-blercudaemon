@@ -123,6 +123,10 @@ class BleRcuDevice1Adaptor : public DBusAbstractAdaptor
 	            "    <method name=\"SendRcuAction\">\n"
 	            "      <arg direction=\"in\" type=\"y\" name=\"action\"/>\n"
 	            "    </method>\n"
+	            "    <method name=\"WriteAdvertisingConfig\">\n"
+	            "      <arg direction=\"in\" type=\"y\" name=\"config\"/>\n"
+	            "      <arg direction=\"in\" type=\"ay\" name=\"customList\"/>\n"
+	            "    </method>\n"
 	            "    <method name=\"FindMe\">\n"
 	            "      <arg direction=\"in\" type=\"y\" name=\"level\"/>\n"
 	            "      <arg direction=\"in\" type=\"i\" name=\"duration\"/>\n"
@@ -181,6 +185,8 @@ public:
 	Q_PROPERTY(quint8 UnpairReason READ unpairReason)
 	Q_PROPERTY(quint8 RebootReason READ rebootReason)
 	Q_PROPERTY(quint8 LastKeypress READ lastKeypress)
+	Q_PROPERTY(quint8 AdvertisingConfig READ advConfig)
+	Q_PROPERTY(QByteArray AdvertisingConfigCustomList READ advConfigCustomList)
 
 public:
 	BleRcuDevice1Adaptor(const QSharedPointer<BleRcuDevice> &device,
@@ -221,6 +227,8 @@ public:
 	quint8 unpairReason() const;
 	quint8 rebootReason() const;
 	quint8 lastKeypress() const;
+	quint8 advConfig() const;
+	QByteArray advConfigCustomList() const;
 
 public slots:
 	void ProgramIrSignals(qint32 codeId, const CdiKeyCodeList &keyCode,
@@ -242,6 +250,7 @@ public slots:
 	void SetTouchMode(quint32 flags, const QDBusMessage &message);
 
 	void SendRcuAction(quint8 action, const QDBusMessage &message);
+	void WriteAdvertisingConfig(quint8 config, const QByteArray &customList, const QDBusMessage &message);
 
 signals:
 
@@ -270,6 +279,8 @@ private:
 	void onUnpairReasonChanged(quint8 unpairReason);
 	void onRebootReasonChanged(quint8 rebootReason);
 	void onLastKeypressChanged(quint8 lastKeypress);
+	void onAdvConfigChanged(quint8 config);
+	void onAdvConfigCustomListChanged(QByteArray &customList);
 
 	Qt::Key convertCDIKeyCode(quint16 cdiKeyCode) const;
 

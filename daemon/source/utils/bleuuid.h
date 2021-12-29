@@ -100,6 +100,8 @@ public:
 		RebootReason = 0xed02,
 		RcuAction = 0xed03,
 		LastKeypress = 0xed04,
+		AdvertisingConfig = 0xed05,
+		AdvertisingConfigCustomList = 0xed06,
 	};
 
 	enum DescriptorType {
