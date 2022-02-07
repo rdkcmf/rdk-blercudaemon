@@ -97,7 +97,7 @@
 			"manufacturer": "UEI",
 			"oui": "E8:0F:C8",
 			"pairingNameFormat": "U%03hhu SkyQ EC[23]02",
-			"scanNameFormat": "U[0-9][0-9][0-9] SkyQ EC[23]02",
+			"scanNameFormat": "[UP][0-9][0-9][0-9] SkyQ EC[23]02",
 			"filterBytes": [ 19, 21 ],
 			"services": {
 				"type": "gatt",
@@ -137,7 +137,7 @@
 			"manufacturer": "RemoteSolutions",
 			"oui": "20:44:41",
 			"pairingNameFormat": "U%03hhu SkyQ LC103",
-			"scanNameFormat": "U[0-9][0-9][0-9] SkyQ LC103",
+			"scanNameFormat": "[UP][0-9][0-9][0-9] SkyQ LC103",
 			"filterBytes": [ 22 ],
 			"services": {
 				"type": "gatt",
