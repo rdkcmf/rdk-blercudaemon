@@ -50,10 +50,6 @@ if( NOT RDK )
     add_definitions( -DENABLE_BLERCU_CONN_PARAM_CHANGER=1 )
 endif()
 
-if (ENABLE_BREAKPAD)
-    add_definitions( -DBREAKPAD_SUPPORT )
-    find_library(BREAKPAD_LIB NAMES breakpad_client)
-endif()
 
 # Add the top level source directory to the include paths
 include_directories( source )
@@ -138,7 +134,6 @@ target_link_libraries( # Specifies the target executable
 
         ${BTMGR_LIBRARIES}
 
-        ${BREAKPAD_LIB}
         )
 
 target_compile_definitions(
