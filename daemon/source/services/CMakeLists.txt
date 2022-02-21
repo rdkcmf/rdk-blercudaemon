@@ -32,9 +32,4 @@ target_include_directories( services
 
 include( ${CMAKE_CURRENT_LIST_DIR}/dbus/CMakeLists.txt )
 
-if ( ENABLE_AS_SERVICE )
-    add_definitions( -DENABLE_AS_SERVICE=1 )
-    add_subdirectory( as )
-endif()
-
 
