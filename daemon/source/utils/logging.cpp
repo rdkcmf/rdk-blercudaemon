@@ -627,7 +627,7 @@ void setupLogging(LoggingTargets targets, LoggingLevels levels)
 	// we can access libethanlog.so
 	if (g_logTargets & LoggingTarget::EthanLog) {
 		if (!setupEthanLogging())
-			g_logTargets &= ~LoggingTarget::EthanLog;
+                    g_logTargets = (g_logTargets & ~LoggingTarget::EthanLog);
 	}
 
 #endif // !defined(Q_OS_ANDROID)
