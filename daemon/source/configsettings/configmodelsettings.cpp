@@ -241,11 +241,13 @@ ConfigModelSettingsData::ConfigModelSettingsData(const QJsonObject &json)
 	// standbyMode field
 	{
 		const QJsonValue standbyMode = json["standbyMode"];
-		if (!standbyMode.isString()) {
-			qWarning("invalid 'standbyMode' field");
-			m_standbyMode = "";
-		} else {
-			m_standbyMode = standbyMode.toString();
+		if (!standbyMode.isUndefined()) {
+			if (!standbyMode.isString()) {
+				qWarning("invalid 'standbyMode' field");
+				m_standbyMode = "";
+			} else {
+				m_standbyMode = standbyMode.toString();
+			}
 		}
 	}
 
