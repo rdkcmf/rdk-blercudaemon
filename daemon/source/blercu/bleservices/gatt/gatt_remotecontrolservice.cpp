@@ -458,9 +458,13 @@ void GattRemoteControlService::requestUnpairReason()
 	const std::function<void(const QByteArray &value)> successCallback =
 		[this](const QByteArray &value)
 		{
-			// onUnpairReasonChanged(value);
-			m_unpairReason = static_cast<quint8>(value.at(0));
-			qWarning() << "Initial unpair reason is" << m_unpairReason;
+			// sanity check the data received
+			if (value.length() != 1) {
+				qError("Unpair reason received has invalid length (%d bytes)", value.length());
+			} else {
+				m_unpairReason = static_cast<quint8>(value.at(0));
+				qWarning() << "Initial unpair reason is" << m_unpairReason;
+			}
 		};
 
 
@@ -500,9 +504,13 @@ void GattRemoteControlService::requestRebootReason()
 	const std::function<void(const QByteArray &value)> successCallback =
 		[this](const QByteArray &value)
 		{
-			// onRebootReasonChanged(value);
-			m_rebootReason = static_cast<quint8>(value.at(0));
-			qInfo() << "Initial reboot reason is" << m_rebootReason;
+			// sanity check the data received
+			if (value.length() != 1) {
+				qError("Reboot reason received has invalid length (%d bytes)", value.length());
+			} else {
+				m_rebootReason = static_cast<quint8>(value.at(0));
+				qInfo() << "Initial reboot reason is" << m_rebootReason;
+			}
 		};
 
 
@@ -542,9 +550,14 @@ void GattRemoteControlService::requestLastKeypress()
 	const std::function<void(const QByteArray &value)> successCallback =
 		[this](const QByteArray &value)
 		{
-			m_lastKeypress = static_cast<quint8>(value.at(0));
-			qInfo().nospace() << "Successfully read last key press characteristic, value = <0x" << hex << m_lastKeypress << ">, emitting signal...";
-			emit lastKeypressChanged(m_lastKeypress);
+			// sanity check the data received
+			if (value.length() != 1) {
+				qError("Last key press received has invalid length (%d bytes)", value.length());
+			} else {
+				m_lastKeypress = static_cast<quint8>(value.at(0));
+				qInfo().nospace() << "Successfully read last key press characteristic, value = <0x" << hex << m_lastKeypress << ">, emitting signal...";
+				emit lastKeypressChanged(m_lastKeypress);
+			}
 		};
 
 	if (m_lastKeypressCharacteristic && m_lastKeypressCharacteristic->isValid()) {
@@ -589,9 +602,14 @@ void GattRemoteControlService::requestAdvConfig()
 	const std::function<void(const QByteArray &value)> successCallback =
 		[this](const QByteArray &value)
 		{
-			m_advConfig = static_cast<quint8>(value.at(0));
-			qInfo().nospace() << "Successfully read advertising config characteristic, value = 0x" << hex << m_advConfig;
-			emit advConfigChanged(m_advConfig);
+			// sanity check the data received
+			if (value.length() != 1) {
+				qError("Advertising config received has invalid length (%d bytes)", value.length());
+			} else {
+				m_advConfig = static_cast<quint8>(value.at(0));
+				qInfo().nospace() << "Successfully read advertising config characteristic, value = 0x" << hex << m_advConfig;
+				emit advConfigChanged(m_advConfig);
+			}
 		};
 
 	if (m_advConfigCharacteristic && m_advConfigCharacteristic->isValid()) {
@@ -795,9 +813,14 @@ void GattRemoteControlService::onWriteCustomConfigReply()
  */
 void GattRemoteControlService::onUnpairReasonChanged(const QByteArray &newValue)
 {
-	m_unpairReason = static_cast<quint8>(newValue.at(0));
-	qWarning() << "unpair reason changed to" << m_unpairReason;
-	emit unpairReasonChanged(m_unpairReason);
+	// sanity check the data received
+	if (newValue.length() != 1) {
+		qError("Unpair reason received has invalid length (%d bytes)", newValue.length());
+	} else {
+		m_unpairReason = static_cast<quint8>(newValue.at(0));
+		qWarning() << "unpair reason changed to" << m_unpairReason;
+		emit unpairReasonChanged(m_unpairReason);
+	}
 }
 
 // -----------------------------------------------------------------------------
@@ -809,9 +832,14 @@ void GattRemoteControlService::onUnpairReasonChanged(const QByteArray &newValue)
  */
 void GattRemoteControlService::onRebootReasonChanged(const QByteArray &newValue)
 {
-	m_rebootReason = static_cast<quint8>(newValue.at(0));
-	qWarning() << "reboot reason changed to" << m_rebootReason;
-	emit rebootReasonChanged(m_rebootReason);
+	// sanity check the data received
+	if (newValue.length() != 1) {
+		qError("Reboot reason received has invalid length (%d bytes)", newValue.length());
+	} else {
+		m_rebootReason = static_cast<quint8>(newValue.at(0));
+		qWarning() << "reboot reason changed to" << m_rebootReason;
+		emit rebootReasonChanged(m_rebootReason);
+	}
 }
 
 
