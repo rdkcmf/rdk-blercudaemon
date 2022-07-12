@@ -139,7 +139,7 @@
 			"pairingNameFormat": "U%03hhu SkyQ LC103",
 			"scanNameFormat": "[UP][0-9][0-9][0-9] SkyQ LC103",
 			"filterBytes": [ 22 ],
-			"standyMode": "C",
+			"standbyMode": "C",
 			"services": {
 				"type": "gatt",
 				"supported": [
