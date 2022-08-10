@@ -60,6 +60,7 @@ public:
 
 	QByteArray pairingNameFormat() const;
 	QRegExp scanNameMatcher() const;
+	QRegExp connectNameMatcher() const;
 
 	QSet<quint8> irFilterBytes() const;
 

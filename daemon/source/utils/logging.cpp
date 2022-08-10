@@ -353,7 +353,7 @@ static inline void logToJournald(LoggingLevel level,const char *file,
 	iov[n].iov_len = 10;
 	n++;
 
-	char msgBuf[128];
+	char msgBuf[512];
 	iov[n].iov_base = (void*) msgBuf;
 	iov[n].iov_len = snprintf(msgBuf, sizeof(msgBuf), "MESSAGE=%s", msg);
 	iov[n].iov_len = qMin<size_t>(iov[n].iov_len, sizeof(msgBuf));

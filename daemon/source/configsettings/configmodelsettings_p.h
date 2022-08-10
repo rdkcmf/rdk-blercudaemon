@@ -54,6 +54,7 @@ public:
 	bool m_disabled;
 	QByteArray m_pairingNameFormat;
 	QRegExp m_scanNameMatcher;
+	QRegExp m_connectNameMatcher;
 	QSet<quint8> m_filterBytes;
 	QString m_standbyMode;
 

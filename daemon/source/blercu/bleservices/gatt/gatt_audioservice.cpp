@@ -318,6 +318,10 @@ void GattAudioService::onEnteredState(int state)
 {
 	switch (state) {
 		case IdleState:
+			if (m_audioDataCharacteristic) {
+				qInfo() << "Disabling notifications for m_audioDataCharacteristic";
+				m_audioDataCharacteristic->enableNotifications(false);
+			}
 			m_audioGainCharacteristic.reset();
 			m_audioCtrlCharacteristic.reset();
 			m_audioDataCharacteristic.reset();
@@ -400,8 +404,7 @@ void GattAudioService::onEnteredEnableNotificationsState()
 		};
 
 
-	// send a request to the bluez daemon to start notifing us of battery
-	// level changes
+	// send a request to set CCCD for audio data characteristic
 	Future<> result = m_audioDataCharacteristic->enableNotifications(true);
 	if (!result.isValid() || result.isError()) {
 		errorCallback(result.errorName(), result.errorMessage());

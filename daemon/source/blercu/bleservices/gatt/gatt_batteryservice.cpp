@@ -188,6 +188,10 @@ void GattBatteryService::stop()
 void GattBatteryService::onEnteredState(int state)
 {
 	if (state == IdleState) {
+		if (m_battLevelCharacteristic) {
+			qInfo() << "Disabling notifications for m_battLevelCharacteristic";
+			m_battLevelCharacteristic->enableNotifications(false);
+		}
 		m_battLevelCharacteristic.reset();
 
 	} else if (state == StartNotifyState) {

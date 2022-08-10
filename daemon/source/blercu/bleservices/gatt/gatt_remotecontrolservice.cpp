@@ -232,6 +232,15 @@ void GattRemoteControlService::stop()
 void GattRemoteControlService::onEnteredState(int state)
 {
 	if (state == IdleState) {
+		if (m_unpairReasonCharacteristic) {
+			qInfo() << "Disabling notifications for m_unpairReasonCharacteristic";
+			m_unpairReasonCharacteristic->enableNotifications(false);
+		}
+		if (m_rebootReasonCharacteristic) {
+			qInfo() << "Disabling notifications for m_rebootReasonCharacteristic";
+			m_rebootReasonCharacteristic->enableNotifications(false);
+		}
+
 		m_lastKeypressCharacteristic.reset();
 		m_advConfigCharacteristic.reset();
 		m_advConfigCustomListCharacteristic.reset();

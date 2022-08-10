@@ -221,6 +221,18 @@ ConfigModelSettingsData::ConfigModelSettingsData(const QJsonObject &json)
 		                            QRegExp::Wildcard);
 	}
 
+	// connectNameFormat field
+	{
+		const QJsonValue connectNameFormat = json["connectNameFormat"];
+		if (!connectNameFormat.isString()) {
+			qWarning("invalid 'connectNameFormat' field");
+			return;
+		}
+		m_connectNameMatcher = QRegExp(connectNameFormat.toString(),
+		                            Qt::CaseInsensitive,
+		                            QRegExp::Wildcard);
+	}
+
 	// filterByte field
 	{
 		const QJsonValue filterBytes = json["filterBytes"];
@@ -480,6 +492,16 @@ QByteArray ConfigModelSettings::pairingNameFormat() const
 QRegExp ConfigModelSettings::scanNameMatcher() const
 {
 	return d->m_scanNameMatcher;
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	EGTODO
+
+ */
+QRegExp ConfigModelSettings::connectNameMatcher() const
+{
+	return d->m_connectNameMatcher;
 }
 
 // -----------------------------------------------------------------------------

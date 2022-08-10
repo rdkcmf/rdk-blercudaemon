@@ -104,7 +104,7 @@ QVector<QRegExp> BleRcuAdapterBluez::getSupportedPairingNames(const QList<Config
 
 	for (const ConfigModelSettings &model : modelDetails) {
 		if (!model.disabled()) {
-			names.push_back(model.scanNameMatcher());
+			names.push_back(model.connectNameMatcher());
 		}
 	}
 
@@ -1811,7 +1811,7 @@ void BleRcuAdapterBluez::onDeviceReadyChanged(const BleAddress &address,
 	qMilestone() << "device with address" << address << "is"
 	             << (ready ? "" : "not") << "ready";
 
-	if (ready && m_devices.contains(address)) {
+	if (ready && m_hciSocket && m_devices.contains(address)) {
 		if (m_devices[address]->name() == "Platco PR1") {
 			// We have a Platco RCU, find the HCI handle and send VSC to BT/Wifi chip
 			const QList<HciSocket::ConnectedDeviceInfo> deviceInfos = m_hciSocket->getConnectedDevices();
@@ -1819,11 +1819,9 @@ void BleRcuAdapterBluez::onDeviceReadyChanged(const BleAddress &address,
 				qInfo() << "found connected device" << deviceInfo;
 
 				if (address == deviceInfo.address) {
-					if (m_hciSocket) {
-						qMilestone() << "HCI connection handle:" << deviceInfo.handle << ", device:" << deviceInfo.address
-								<< "is a Platco remote, sending VSC to increase BT data capability in the chip BT/WIFI coexistence engine.";
-						m_hciSocket->sendIncreaseDataCapability(deviceInfo.handle);
-					}
+					qMilestone() << "HCI connection handle:" << deviceInfo.handle << ", device:" << deviceInfo.address
+							<< "is a Platco remote, sending VSC to increase BT data capability in the chip BT/WIFI coexistence engine.";
+					m_hciSocket->sendIncreaseDataCapability(deviceInfo.handle);
 				}
 			}
 		}

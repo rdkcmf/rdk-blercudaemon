@@ -233,7 +233,7 @@ ConfigModelSettings ConfigSettings::modelSettings(quint32 oui) const
 ConfigModelSettings ConfigSettings::modelSettings(QString name) const
 {
 	for (const ConfigModelSettings &settings : m_modelDetails) {
-		if (settings.scanNameMatcher().exactMatch(name))
+		if (settings.connectNameMatcher().exactMatch(name))
 			return settings;
 	}
 
