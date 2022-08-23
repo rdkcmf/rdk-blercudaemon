@@ -144,7 +144,7 @@
 			"oui": "FF:FF:FF",
 			"pairingNameFormat": "U%03hhu SkyQ LC103",
 			"scanNameFormat": "[U][0-9][0-9][0-9] SkyQ LC103",
-			"connectNameFormat": "[UP][0-9][0-9][0-9] SkyQ LC103",
+			"connectNameFormat": "[UP][0-9][0-9][0-9] SkyQ LC[12]03*",
 			"filterBytes": [ 22 ],
 			"services": {
 				"type": "gatt",
