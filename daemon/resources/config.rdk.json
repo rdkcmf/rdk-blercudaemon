@@ -144,7 +144,28 @@
 			"oui": "FF:FF:FF",
 			"pairingNameFormat": "U%03hhu SkyQ LC103",
 			"scanNameFormat": "[U][0-9][0-9][0-9] SkyQ LC103",
-			"connectNameFormat": "[UP][0-9][0-9][0-9] SkyQ LC[12]0[34]*",
+			"connectNameFormat": "[UP][0-9][0-9][0-9] SkyQ LC[12]03*",
+			"filterBytes": [ 22 ],
+			"services": {
+				"type": "gatt",
+				"supported": [
+					"audio",
+					"battery",
+					"deviceInfo",
+					"findMe",
+					"infrared",
+					"upgrade",
+					"remoteControl"
+				]
+			}
+		},
+		{
+			"name": "XR103",
+			"manufacturer": "RemoteSolutions",
+			"oui": "FF:FF:FF",
+			"pairingNameFormat": "U%03hhu SkyQ XR103",
+			"scanNameFormat": "[U][0-9][0-9][0-9] SkyQ XR103",
+			"connectNameFormat": "[UP][0-9][0-9][0-9] SkyQ XR103*",
 			"filterBytes": [ 22 ],
 			"services": {
 				"type": "gatt",
