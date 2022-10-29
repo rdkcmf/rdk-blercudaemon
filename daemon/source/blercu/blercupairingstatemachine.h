@@ -137,11 +137,10 @@ private:
 private:
 	const QSharedPointer<BleRcuAdapter> m_adapter;
 
-	QMap<quint32, QByteArray> m_pairingPrefixFormats;
+	QVector<QByteArray> m_pairingPrefixFormats;
 
 	int m_pairingCode;
 	int m_pairingMacHash;
-	QMap<quint32, QRegExp> m_pairingPrefixes;
 	QVector<QRegExp> m_supportedPairingNames;
 
 	BleAddress m_targetAddress;

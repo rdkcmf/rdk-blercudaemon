@@ -49,7 +49,7 @@ BleRcuPairingStateMachine::BleRcuPairingStateMachine(const QSharedPointer<const 
 	const QList<ConfigModelSettings> models = config->modelSettings();
 	for (const ConfigModelSettings &model : models) {
 		if (!model.disabled())
-			m_pairingPrefixFormats[model.oui()] = model.pairingNameFormat();
+			m_pairingPrefixFormats.push_back(model.pairingNameFormat());
 	}
 
 
@@ -248,23 +248,19 @@ void BleRcuPairingStateMachine::start(quint8 filterByte, quint8 pairingCode)
 	m_pairingCode = pairingCode;
 	m_pairingMacHash = -1;
 
-	// create a map of OUI (first 3 bytes of mac address) to a regex to match to
-	// the name of the device
-	m_pairingPrefixes.clear();
+	// create list of supported remotes regex to match to the name of the device
 	m_supportedPairingNames.clear();
-	QMap<quint32, QByteArray>::const_iterator it = m_pairingPrefixFormats.begin();
+
+	QVector<QByteArray>::const_iterator it = m_pairingPrefixFormats.begin();
 	for (; it != m_pairingPrefixFormats.end(); ++it) {
 
 		// construct the wildcard match
-		QRegExp regEx(QString_asprintf(it.value().constData(), pairingCode));
+		QRegExp regEx(QString_asprintf(it->constData(), pairingCode));
 		regEx.setPatternSyntax(QRegExp::WildcardUnix);
 
-		qInfo("pairing regex for %02hhX:%02hhX:%02hhX:xx:xx:xx is '%s'",
-		      quint8(it.key() >> 16), quint8(it.key() >> 8), quint8(it.key() >> 0),
-		      regEx.pattern().toLatin1().constData());
+		qInfo("added pairing regex for supported remote '%s'", regEx.pattern().toLatin1().constData());
 
-		// add to the map to use for compare when a device is found
-		m_pairingPrefixes.insert(it.key(), std::move(regEx));
+		// add to the list to use for compare when a device is found
 		m_supportedPairingNames.push_back(std::move(regEx));
 	}
 
@@ -304,7 +300,6 @@ void BleRcuPairingStateMachine::startMacHash(quint8 filterByte, quint8 macHash)
 
 	// clear the maps, we are trying to pair to a specific device using a hash
 	// of the MAC address instead
-	m_pairingPrefixes.clear();
 	m_supportedPairingNames.clear();
 
 	// start the state machine
@@ -337,11 +332,7 @@ void BleRcuPairingStateMachine::start(const BleAddress &target, const QString &n
 	m_pairingMacHash = -1;
 
 	// set the pairing prefix map to contain just the one name match
-	m_pairingPrefixes.clear();
 	m_supportedPairingNames.clear();
-
-	m_pairingPrefixes.insert(target.oui(),
-	                         QRegExp(name, Qt::CaseInsensitive, QRegExp::FixedString));
 	m_supportedPairingNames.push_back(QRegExp(name, Qt::CaseInsensitive, QRegExp::FixedString));
 
 	// start the state machine
@@ -812,45 +803,36 @@ void BleRcuPairingStateMachine::onEnteredFinishedState()
 void BleRcuPairingStateMachine::processDevice(const BleAddress &address,
                                               const QString &name)
 {
-	// get the pairing name prefix to use for the given device (based on the
-	// OUI of the device's MAC address)
-	QMap<quint32, QRegExp>::const_iterator it = m_pairingPrefixes.find(address.oui());
-	if (it != m_pairingPrefixes.end()) {
-		if (!it->exactMatch(name)) {
-			return;
+	// Iterate through list of supported remotes and compare names
+	QVector<QRegExp>::const_iterator it_name = m_supportedPairingNames.begin();
+	for (; it_name != m_supportedPairingNames.end(); ++it_name) {
+		if (it_name->exactMatch(name)) {
+			qInfo() << "Matched remote name successfully, name: " << name << ", address: " << address;
+			break;
 		}
-	} else {
-		// didn't find it based on OUI, so iterate through and compare names
-		QVector<QRegExp>::const_iterator it_name = m_supportedPairingNames.begin();
-		for (; it_name != m_supportedPairingNames.end(); ++it_name) {
-			if (it_name->exactMatch(name)) {
-				qInfo() << "OUI not found, but matched name successfully, name: " << name << ", address: " << address;
-				break;
-			}
-		}
+	}
 
-		if (it_name == m_supportedPairingNames.end()) {
-			// Device not found through conventional means, see if we are pairing based on MAC hash
-			if (m_pairingMacHash != -1) {
-				// Check if MAC hash matches
-				int macHash = 0;
-				for (int i = 0; i < 6; ++i) {
-					macHash += (int)address[i];
-				}
-				macHash &= 0xFF;
-				qInfo() << "Validating device based on MAC hash, requested MAC hash = " << m_pairingMacHash 
-						<< ", MAC hash of this device = " << macHash << ", name: " << name << ", address: " << address;
-				if (m_pairingMacHash != macHash) {
-					return;
-				}
-			} else {
-				// log an error if we don't already have a target device (and
-				// therefore have a restricted m_pairingPrefixes set)
-				if (m_targetAddress.isNull()) {
-					qWarning() << "odd, don't have a name prefix for device" << address;
-				}
+	if (it_name == m_supportedPairingNames.end()) {
+		// Device not found through conventional means, see if we are pairing based on MAC hash
+		// Because if we are pairing based on MAC hash, m_supportedPairingNames is first cleared
+		if (m_pairingMacHash != -1) {
+			// Check if MAC hash matches
+			int macHash = 0;
+			for (int i = 0; i < 6; ++i) {
+				macHash += (int)address[i];
+			}
+			macHash &= 0xFF;
+			qInfo() << "Validating device based on MAC hash, requested MAC hash = " << m_pairingMacHash 
+					<< ", MAC hash of this device = " << macHash << ", name: " << name << ", address: " << address;
+			if (m_pairingMacHash != macHash) {
 				return;
 			}
+		} else {
+			// log an error if we don't already have a target device
+			if (m_targetAddress.isNull()) {
+				qWarning() << "odd, don't have a name prefix for device" << address;
+			}
+			return;
 		}
 	}
 
