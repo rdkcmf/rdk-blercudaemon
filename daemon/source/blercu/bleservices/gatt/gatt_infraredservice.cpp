@@ -52,9 +52,12 @@ const BleUuid GattInfraredService::m_serviceUuid(BleUuid::SkyQInfrared);
 	Constructs the infrared GATT service.
 
  */
-GattInfraredService::GattInfraredService(const QSharedPointer<const IrDatabase> &irDatabase, const ConfigModelSettings &settings)
+GattInfraredService::GattInfraredService(const QSharedPointer<const IrDatabase> &irDatabase,
+                                         const ConfigModelSettings &settings,
+                                         const QSharedPointer<const GattDeviceInfoService> &deviceInfo)
 	: BleRcuInfraredService(nullptr)
 	, m_irDatabase(irDatabase)
+	, m_deviceInfo(deviceInfo)
 	, m_irStandbyMode(StandbyModeB)
 	, m_codeId(-1)
 {
@@ -70,7 +73,7 @@ GattInfraredService::GattInfraredService(const QSharedPointer<const IrDatabase> 
 	else
 		m_irStandbyMode = StandbyModeB;
 
-	qInfo("using standby mode %c", (m_irStandbyMode == StandbyModeC) ? 'C' : 'B');
+	qInfo("will set IR standby mode %c", (m_irStandbyMode == StandbyModeC) ? 'C' : 'B');
 
 
 	// setup the state machine
@@ -336,31 +339,46 @@ void GattInfraredService::onEnteredSetStandbyModeState()
 		return;
 	}
 
-	// for amidala boxes we use mode C
-	const quint8 value = (m_irStandbyMode == StandbyModeC) ? 0x00 : 0x01;
-
-
-	// lambda called if an error occurs enabling the notifications
+	// lambda called if an error occurs during the characteristic write
 	const std::function<void(const QString&, const QString&)> errorCallback =
 		[this](const QString &errorName, const QString &errorMessage)
 		{
-			qError() << "failed to write standby mode due to" << errorName << errorMessage;
+			qError() << "failed to write IR standby mode due to" << errorName << errorMessage;
 
 			// tell the state machine we are now ready (even though we have failed)
 			m_stateMachine.postEvent(SetIrStandbyModeEvent);
 		};
 
-	// lamda called if notifications are successifully enabled
+	// lamda called if characteristic write was successful
 	const std::function<void()> successCallback =
 		[this](void)
 		{
-			qInfo("set ir standby mode to 0x%02x",
-			      (m_irStandbyMode == StandbyModeC) ? 0x00 : 0x01);
+			qInfo("Successfully set IR standby mode %c", (m_irStandbyMode == StandbyModeC) ? 'C' : 'B');
 
 			// tell the state machine we are now ready
 			m_stateMachine.postEvent(SetIrStandbyModeEvent);
 		};
 
+	// standby mode C is not supported on LC103s with versions < 5103.2.6
+	if (m_deviceInfo->softwareVersion().isEmpty()) {
+		qWarning("sw version of remote is not available yet");
+	} else {
+		QVector<int> modeCVersionSupported = {5103, 2, 6};
+		QStringList  swVersion = m_deviceInfo->softwareVersion().split(".");
+
+		if (modeCVersionSupported[0] == swVersion[0].toInt()) {		//the first number 5103 is an identifying number for LC103 firmware
+			for (int i = 1; i < swVersion.size(); i++) {
+				if (swVersion[i].toInt() < modeCVersionSupported[i]) {
+					qWarning() << "LC103 firmware version" << m_deviceInfo->softwareVersion() << "does not support IR standby mode C, setting mode B instead.";
+					m_irStandbyMode = StandbyModeB;
+					break;
+				} else if (swVersion[i].toInt() > modeCVersionSupported[i]) {
+					break;
+				}
+			}
+		}
+	}
+	const quint8 value = (m_irStandbyMode == StandbyModeC) ? 0x00 : 0x01;
 
 	// send a request to write the standby mode
 	Future<> result = m_standbyModeCharacteristic->writeValue(QByteArray(1, value));

@@ -31,6 +31,7 @@
 #include "utils/statemachine.h"
 #include "utils/futureaggregator.h"
 #include "configsettings/configsettings.h"
+#include "gatt_deviceinfoservice.h"
 
 #include <QMap>
 #include <QEvent>
@@ -51,7 +52,9 @@ class GattInfraredService : public BleRcuInfraredService
 	Q_OBJECT
 
 public:
-	explicit GattInfraredService(const QSharedPointer<const IrDatabase> &irDatabase, const ConfigModelSettings &settings);
+	explicit GattInfraredService(const QSharedPointer<const IrDatabase> &irDatabase,
+							  const ConfigModelSettings &settings,
+							  const QSharedPointer<const GattDeviceInfoService> &deviceInfo);
 	~GattInfraredService() final;
 
 public:
@@ -129,6 +132,7 @@ private:
 
 private:
 	const QSharedPointer<const IrDatabase> m_irDatabase;
+	const QSharedPointer<const GattDeviceInfoService> m_deviceInfo;
 
 	enum StandbyMode {
 		StandbyModeB,
