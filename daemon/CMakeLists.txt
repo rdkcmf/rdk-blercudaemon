@@ -45,10 +45,7 @@ set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -U __PRETTY_FUNCTION__" )
 set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D __PRETTY_FUNCTION__=__func__" )
 
 
-# Add RDK configuration
-if( NOT RDK )
-    add_definitions( -DENABLE_BLERCU_CONN_PARAM_CHANGER=1 )
-endif()
+add_definitions( -DENABLE_BLERCU_CONN_PARAM_CHANGER=1 )
 
 
 # Add the top level source directory to the include paths
@@ -62,6 +59,7 @@ add_subdirectory( source/dbus )
 add_subdirectory( source/blercu )
 add_subdirectory( source/irdb )
 add_subdirectory( source/configsettings )
+add_subdirectory( source/bleconnparamchanger )
 if( ENABLE_IRPAIRING )
     add_subdirectory( source/irpairing )
 endif()
@@ -90,6 +88,7 @@ add_executable(
         $<TARGET_OBJECTS:blercu>
         $<TARGET_OBJECTS:services>
         $<TARGET_OBJECTS:configsettings>
+        $<TARGET_OBJECTS:bleconnparamchanger>
         $<$<BOOL:${ENABLE_IR_DATABASE_PLUGINS}>:$<TARGET_OBJECTS:irdb>>
         $<$<BOOL:${ENABLE_IRPAIRING}>:$<TARGET_OBJECTS:irpairing>>
         $<$<CONFIG:Debug>:$<TARGET_OBJECTS:monitors>>

@@ -31,6 +31,8 @@
 #include "blercu/bleservices/blercuaudioservice.h"
 #include "blercu/blercuerror.h"
 
+#include "utils/hcisocket.h"
+
 #include <QObject>
 #include <QString>
 #include <QList>
@@ -130,6 +132,12 @@ class BleRcuDevice1Adaptor : public DBusAbstractAdaptor
 	            "    <method name=\"FindMe\">\n"
 	            "      <arg direction=\"in\" type=\"y\" name=\"level\"/>\n"
 	            "      <arg direction=\"in\" type=\"i\" name=\"duration\"/>\n"
+	            "    </method>\n"
+	            "    <method name=\"SetConnectionParams\">\n"
+	            "      <arg direction=\"in\" type=\"d\" name=\"minInterval\"/>\n"
+	            "      <arg direction=\"in\" type=\"d\" name=\"maxInterval\"/>\n"
+	            "      <arg direction=\"in\" type=\"i\" name=\"latency\"/>\n"
+	            "      <arg direction=\"in\" type=\"i\" name=\"supervisionTimeout\"/>\n"
 	            "    </method>\n"
 	            "    <method name=\"SendIrSignal\">\n"
 	            "      <arg direction=\"in\" type=\"q\" name=\"id\"/>\n"
@@ -252,6 +260,9 @@ public slots:
 	void SendRcuAction(quint8 action, const QDBusMessage &message);
 	void WriteAdvertisingConfig(quint8 config, const QByteArray &customList, const QDBusMessage &message);
 
+	void SetConnectionParams(double minInterval, double maxInterval,
+                             qint32 latency, qint32 supervisionTimeout, const QDBusMessage &request);
+
 signals:
 
 private:
@@ -298,6 +309,7 @@ private:
 private:
 	const QSharedPointer<BleRcuDevice> m_device;
 	const QDBusObjectPath m_dbusObjPath;
+	QSharedPointer<HciSocket> m_hciSocket;
 };
 
 #endif // !defined(BLERCUDEVICE1_ADAPTOR_H)

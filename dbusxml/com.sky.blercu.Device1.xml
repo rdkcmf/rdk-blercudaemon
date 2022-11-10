@@ -65,6 +65,13 @@
 			<arg name="packets_expected" type="u" direction="out"/>
 		</method>
 
+		<method name="SetConnectionParams">
+			<arg name="minInterval" type="d" direction="in"/>
+			<arg name="maxInterval" type="d" direction="in"/>
+			<arg name="latency" type="i" direction="in"/>
+			<arg name="supervisionTimeout" type="i" direction="in"/>
+		</method>
+
 		<property name="Address" type="s" access="read">
 			<annotation name="org.freedesktop.DBus.Property.EmitsChangedSignal" value="const"/>
 		</property>

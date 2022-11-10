@@ -44,7 +44,7 @@
 #include "blercu/btrmgradapter.h"
 
 #if defined(ENABLE_BLERCU_CONN_PARAM_CHANGER)
-#  include "bleconnparamchanger.h"
+#  include "bleconnparamchanger/bleconnparamchanger.h"
 #endif
 
 #include "irdb/irdatabasefactory.h"

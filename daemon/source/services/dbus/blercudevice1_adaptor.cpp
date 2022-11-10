@@ -160,6 +160,13 @@ BleRcuDevice1Adaptor::BleRcuDevice1Adaptor(const QSharedPointer<BleRcuDevice> &d
 	                 this, &BleRcuDevice1Adaptor::onAdvConfigChanged);
 	QObject::connect(remoteControlService.data(), &BleRcuRemoteControlService::advConfigCustomListChanged,
 	                 this, &BleRcuDevice1Adaptor::onAdvConfigCustomListChanged);
+
+	
+	qInfo("Create HciSocket");
+	m_hciSocket = HciSocket::create(0, -1);
+	if (!m_hciSocket || !m_hciSocket->isValid()) {
+		qError("failed to setup hci socket to hci%u", 0);
+	}
 }
 
 BleRcuDevice1Adaptor::~BleRcuDevice1Adaptor()
@@ -828,6 +835,34 @@ void BleRcuDevice1Adaptor::FindMe(quint8 level, qint32 duration,
 	}
 
 	connectFutureToDBusReply(request, result);
+}
+
+// -----------------------------------------------------------------------------
+/*!
+	DBus method call handler for com.sky.BleRcuDevice1.SetConnectionParams
+
+ */
+void BleRcuDevice1Adaptor::SetConnectionParams(double minInterval, double maxInterval,
+                                  qint32 latency, qint32 supervisionTimeout, const QDBusMessage &request)
+{
+	if (m_hciSocket) {
+		BleAddress bdaddr = m_device->address();
+		BleConnectionParameters desiredParams(minInterval, maxInterval, latency, supervisionTimeout);
+		const QList<HciSocket::ConnectedDeviceInfo> deviceInfos = m_hciSocket->getConnectedDevices();
+		for (const HciSocket::ConnectedDeviceInfo &deviceInfo : deviceInfos) {
+			qInfo() << "found connected device" << deviceInfo;
+			if (bdaddr == deviceInfo.address) {
+				qMilestone() << bdaddr << "with HCI handle(" << deviceInfo.handle
+							<< ") requesting an update of connection parameters to"
+							<< desiredParams;
+				if (false == m_hciSocket->requestConnectionUpdate(deviceInfo.handle, desiredParams)) {
+					sendError(request, BleRcuError::General, QStringLiteral("failed to update connection parameters"));
+				}
+			}
+		}
+	} else {
+		sendError(request, BleRcuError::Rejected, QStringLiteral("HCI socket is NULL"));
+	}
 }
 
 // -----------------------------------------------------------------------------
