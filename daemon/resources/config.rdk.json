@@ -120,7 +120,7 @@
 			"name": "PR1",
 			"manufacturer": "UEI",
 			"oui": "FF:FF:FF",
-			"pairingNameFormat": "Platco PR1",
+			"pairingNameFormat": "%03hhu Platco PR1",
 			"scanNameFormat": "Platco PR1",
 			"connectNameFormat": "Platco PR1",
 			"filterBytes": [ 19, 21 ],
