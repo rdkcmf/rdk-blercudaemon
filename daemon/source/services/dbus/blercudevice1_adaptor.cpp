@@ -42,7 +42,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define USER_INPUT_KEY_STANDBY               (0xE000U)
+#define USER_INPUT_KEY_PRIMARY_POWER         (0xE000U)
+#define USER_INPUT_KEY_SECONDARY_POWER       (0xE001U)
 #define USER_INPUT_KEY_VOLUME_UP             (0xE003U)
 #define USER_INPUT_KEY_VOLUME_DOWN           (0xE004U)
 #define USER_INPUT_KEY_MUTE                  (0xE005U)
@@ -913,8 +914,10 @@ void BleRcuDevice1Adaptor::EraseIrSignals(const QDBusMessage &request)
 Qt::Key BleRcuDevice1Adaptor::convertCDIKeyCode(quint16 cdiKeyCode) const
 {
 	switch (cdiKeyCode) {
-		case USER_INPUT_KEY_STANDBY:
+		case USER_INPUT_KEY_PRIMARY_POWER:
 			return Qt::Key_Standby;
+		case USER_INPUT_KEY_SECONDARY_POWER:
+			return Qt::Key_WakeUp;
 		case USER_INPUT_KEY_VOLUME_UP:
 			return Qt::Key_VolumeUp;
 		case USER_INPUT_KEY_VOLUME_DOWN:
@@ -949,6 +952,7 @@ void BleRcuDevice1Adaptor::ProgramIrSignals(qint32 codeId, const CdiKeyCodeList 
 
 		// if the key set is empty we set all the available keys
 		keys = { Qt::Key_Standby,
+		         Qt::Key_WakeUp,
 		         Qt::Key_Settings,  // input select
 		         Qt::Key_VolumeUp,
 		         Qt::Key_VolumeDown,

@@ -355,7 +355,8 @@ void GattInfraredSignal::onEnteredInitialisingState()
 			}
 
 			switch (value.at(0)) {
-				case 0x0C:   m_keyCode = Qt::Key_Standby;         break;
+				case 0x0B:   m_keyCode = Qt::Key_WakeUp;          break; // secondary power
+				case 0x0C:   m_keyCode = Qt::Key_Standby;         break; // primary power
 				case 0x29:   m_keyCode = Qt::Key_Settings;        break; // input select
 				case 0x10:   m_keyCode = Qt::Key_VolumeUp;        break;
 				case 0x11:   m_keyCode = Qt::Key_VolumeDown;      break;

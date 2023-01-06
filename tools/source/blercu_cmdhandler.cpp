@@ -46,7 +46,8 @@
 
 
 
-#define USER_INPUT_KEY_STANDBY               (0xE000U)
+#define USER_INPUT_KEY_PRIMARY_POWER         (0xE000U)
+#define USER_INPUT_KEY_SECONDARY_POWER       (0xE001U)
 #define USER_INPUT_KEY_VOLUME_UP             (0xE003U)
 #define USER_INPUT_KEY_VOLUME_DOWN           (0xE004U)
 #define USER_INPUT_KEY_MUTE                  (0xE005U)
@@ -644,8 +645,10 @@ void BleRcuCmdHandler::setSlider(const BleAddress &device, bool on)
  */
 quint16 BleRcuCmdHandler::irSignalNameToKeyCode(const QString &name) const
 {
-	if (name.compare("power", Qt::CaseInsensitive) == 0)
-		return USER_INPUT_KEY_STANDBY;
+	if (name.compare("primary_power", Qt::CaseInsensitive) == 0)
+		return USER_INPUT_KEY_PRIMARY_POWER;
+	if (name.compare("secondary_power", Qt::CaseInsensitive) == 0)
+		return USER_INPUT_KEY_SECONDARY_POWER;
 	if (name.compare("volume_up", Qt::CaseInsensitive) == 0)
 		return USER_INPUT_KEY_VOLUME_UP;
 	if (name.compare("volume_down", Qt::CaseInsensitive) == 0)

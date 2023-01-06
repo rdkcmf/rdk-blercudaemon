@@ -845,7 +845,8 @@ Future<> GattInfraredService::emitIrSignal(Qt::Key keyCode)
 quint8 GattInfraredService::keyCodeToGattValue(Qt::Key keyCode) const
 {
 	switch (keyCode) {
-		case Qt::Key_Standby:        return 0x0C;
+		case Qt::Key_WakeUp:         return 0x0B;   // secondary power
+		case Qt::Key_Standby:        return 0x0C;	// primary power
 		case Qt::Key_Settings:       return 0x29;   // input select
 		case Qt::Key_VolumeUp:       return 0x10;
 		case Qt::Key_VolumeDown:     return 0x11;
